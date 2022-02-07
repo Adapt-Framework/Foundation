@@ -4,5 +4,5 @@ namespace Adapt\Foundation\Arrays;
 
 interface FromArray
 {
-    public static function fromArray(array|ToArray $array): static;
+    public static function fromArray(ToArray|AsArray|array $array): static;
 }

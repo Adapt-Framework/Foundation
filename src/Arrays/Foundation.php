@@ -13,10 +13,14 @@ abstract class Foundation implements ArrayAccess, Countable, SeekableIterator, S
     protected array $items;
     protected mixed $index = 0;
 
-    public function __construct(AsArray|array $array = [])
+    public function __construct(ToArray|AsArray|array $array = [])
     {
         if ($array instanceof AsArray) {
             $array = $array->asArray();
+        }
+
+        if ($array instanceof ToArray) {
+            $array = $array->toArray();
         }
 
         $this->items = $array;
@@ -101,7 +105,7 @@ abstract class Foundation implements ArrayAccess, Countable, SeekableIterator, S
         }
     }
 
-    public static function fromArray(ToArray|array $array): static
+    public static function fromArray(ToArray|AsArray|array $array): static
     {
         return new static($array);
     }
@@ -127,6 +131,4 @@ abstract class Foundation implements ArrayAccess, Countable, SeekableIterator, S
     {
         return $this->items;
     }
-
-
 }

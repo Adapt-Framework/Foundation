@@ -327,4 +327,71 @@ class Arr extends Foundation
     {
         return static::fromArray(array_unique($this->items, $sort));
     }
+
+    public function unshift(mixed ...$values): int
+    {
+        return array_unshift($this->items, ...$values);
+    }
+
+    public function values(): static
+    {
+        return static::fromArray(array_values($this->items));
+    }
+
+    public function walk(Closure $closure, mixed $arg = null): bool
+    {
+        return array_walk($this->items, $closure, $arg);
+    }
+
+    public function sortAscending(bool $preserveKeys = false, int $flags = SORT_REGULAR): bool
+    {
+        if ($preserveKeys) {
+            return asort($this->items, $flags);
+        }
+
+        return sort($this->items, $flags);
+    }
+
+    public function sortDescending(bool $preserveKeys = false, int $flags = SORT_REGULAR): bool
+    {
+        if ($preserveKeys) {
+            return arsort($this->items, $flags);
+        }
+
+        return rsort($this->items, $flags);
+    }
+
+    public function in(mixed $value): bool
+    {
+        return in_array($value, $this->items);
+    }
+
+    public function sortKeysAscending(int $flags = SORT_REGULAR): bool
+    {
+        return ksort($this->items, $flags);
+    }
+
+    public function sortKeysDescending(int $flags = SORT_REGULAR): bool
+    {
+        return krsort($this->items, $flags);
+    }
+
+    public function sortNaturally(bool $caseSensitive = false): bool
+    {
+        if ($caseSensitive) {
+            return natcasesort($this->items);
+        }
+
+        return natsort($this->items);
+    }
+
+    public static function range(string|int|float $start, string|int|float $end, int|float $step = 1): static
+    {
+        return static::fromArray(range($start, $end, $start));
+    }
+
+    public function shuffle(): bool
+    {
+        return shuffle($this->items);
+    }
 }
