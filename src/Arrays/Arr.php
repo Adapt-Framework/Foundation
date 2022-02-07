@@ -2,11 +2,18 @@
 
 namespace Adapt\Foundation\Arrays;
 
+use Adapt\Foundation\Strings\Str;
+use Adapt\Foundation\Strings\ToString;
 use Closure;
 use JetBrains\PhpStorm\Pure;
 
 class Arr extends Foundation
 {
+    public static function create(): static
+    {
+        return new static([]);
+    }
+
     public function isAssoc(): bool
     {
         return array_keys($this->items) !== range(0, count($this->items) - 1);
@@ -79,7 +86,7 @@ class Arr extends Foundation
         return static::fromArray(array_diff_assoc($this->items, ...$arrays));
     }
 
-    public function diffKey(AsArray|array ...$arrays): static
+    public function diffKeys(AsArray|array ...$arrays): static
     {
         array_walk(
             $arrays,
@@ -125,6 +132,43 @@ class Arr extends Foundation
     public function flip(): static
     {
         return static::fromArray(array_flip($this->items));
+    }
+
+    /**
+     * Untested
+     *
+     * @example
+     * For the given array:
+     * ['users' => [['name' => ['first' => 'Matt']]]
+     *
+     * $arr->get('users.0.name.first') === 'Matt'
+     *
+     * @todo Write tests
+     * @param ToString|string $key
+     * @return mixed
+     */
+    public function get(ToString|string $key): mixed
+    {
+        if (!$key instanceof Str) {
+            $key = Str::fromString($key);
+        }
+
+        $parts = $key->explode('.');
+        $value = $this->items;
+
+        foreach($parts as $part) {
+            if ($part === $parts->last()) {
+                if (!is_array($value) || !isset($value[$part->toString()])) {
+                    return null;
+                }
+
+                return $value[$part];
+            }
+
+            $value = $value[$part];
+        }
+
+        return null;
     }
 
     public function intersectAssoc(AsArray|array ...$arrays): static
@@ -227,8 +271,17 @@ class Arr extends Foundation
         return static::fromArray(array_map($closure, $this->items));
     }
 
-    public function merge(array ...$arrays): static
+    public function merge(AsArray|array ...$arrays): static
     {
+        array_walk(
+            $arrays,
+            function(&$value, $key) {
+                if ($value instanceof AsArray) {
+                    $value = $value->asArray();
+                }
+            }
+        );
+
         return static::fromArray(array_merge($this->items, ...$arrays));
     }
 

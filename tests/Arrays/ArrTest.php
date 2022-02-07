@@ -160,12 +160,12 @@ class ArrTest extends TestCase
         $this->assertEquals($expected, $output);
     }
 
-    public function testDiffKey(): void
+    public function testDiffKeys(): void
     {
         $array1 = ['blue' => 1, 'red' => 2, 'green' => 3, 'purple' => 4];
         $array2 = ['green' => 5, 'yellow' => 7, 'cyan' => 8];
         $expected = ['blue' => 1, 'red' => 2, 'purple' => 4];
-        $output = Arr::fromArray($array1)->diffKey($array2)->toArray();
+        $output = Arr::fromArray($array1)->diffKeys($array2)->toArray();
         $this->assertEquals($expected, $output);
     }
 
