@@ -1,0 +1,24 @@
+{
+    "name": "adapt/foundation",
+    "description": "Foundation classes used for building complex products and services.",
+    "minimum-stability": "stable",
+    "license": "proprietary",
+    "authors": [
+        {
+            "name": "Matt Bruton",
+            "email": "matt.bruton@gmail.com"
+        }
+    ],
+    "autoload": {
+        "psr-4": {
+            "Adapt\\Foundation\\": "src/",
+            "Tests\\Adapt\\Foundation\\": "tests/"
+        }
+    },
+    "require": {
+        "php": "^8.0"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^9"
+    }
+}
