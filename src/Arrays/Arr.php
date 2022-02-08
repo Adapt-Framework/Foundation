@@ -346,6 +346,20 @@ class Arr extends Foundation
         return static::fromArray(array_replace($this->items, ...$replacements));
     }
 
+    public function replaceRecursive(AsArray|array ...$replacements): static
+    {
+        array_walk(
+            $replacements,
+            function(&$value, $key) {
+                if ($value instanceof AsArray) {
+                    $value = $value->asArray();
+                }
+            }
+        );
+
+        return static::fromArray(array_replace_recursive($this->items, ...$replacements));
+    }
+
     public function reverse(): static
     {
         return static::fromArray(array_reverse($this->items));
