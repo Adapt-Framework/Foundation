@@ -49,7 +49,6 @@ class ExtensionManager
 
     public static function hasInstanceExtension(ToString|string $class, ToString|string $method): bool
     {
-        print_r(self::getInstance());
         if ($class instanceof ToString) {
             $class = $class->toString();
         }
@@ -84,7 +83,7 @@ class ExtensionManager
             $method = $method->toString();
         }
 
-        if (!self::hasInstanceExtension($class, $method)) {
+        if (self::hasInstanceExtension($class, $method)) {
             return self::getInstance()->instanceExtensions[$class][$method];
         }
 
@@ -101,7 +100,7 @@ class ExtensionManager
             $method = $method->toString();
         }
 
-        if (!self::hasInstanceExtension($class, $method)) {
+        if (self::hasStaticExtension($class, $method)) {
             return self::getInstance()->staticExtensions[$class][$method];
         }
 

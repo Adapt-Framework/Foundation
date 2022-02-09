@@ -7,10 +7,16 @@ use PHPUnit\Framework\TestCase;
 
 class ExtentableTraitTest extends TestCase
 {
-    public function testExtending(): void
+    public function testExtendingInstance(): void
     {
         Arr::extendInstance('hello', function($instance) { return 'world'; });
         $arr = Arr::create();
         $this->assertEquals('world', $arr->hello());
+    }
+
+    public function testExtendingStatic(): void
+    {
+        Arr::extendStatic('hello', function($instance) {return 'world';});
+        $this->assertEquals('world', Arr::hello());
     }
 }
