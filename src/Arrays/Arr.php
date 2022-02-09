@@ -2,13 +2,14 @@
 
 namespace Adapt\Foundation\Arrays;
 
-use Adapt\Foundation\Strings\Str;
+use Adapt\Foundation\Extending\ExtendableTrait;
 use Adapt\Foundation\Strings\ToString;
 use Closure;
-use JetBrains\PhpStorm\Pure;
 
 class Arr extends Foundation
 {
+    use ExtendableTrait;
+
     public static function create(): static
     {
         return new static([]);
@@ -149,26 +150,7 @@ class Arr extends Foundation
      */
     public function get(ToString|string $key): mixed
     {
-        if (!$key instanceof Str) {
-            $key = Str::fromString($key);
-        }
-
-        $parts = $key->explode('.');
-        $value = $this->items;
-
-        foreach($parts as $part) {
-            if ($part === $parts->last()) {
-                if (!is_array($value) || !isset($value[$part->toString()])) {
-                    return null;
-                }
-
-                return $value[$part];
-            }
-
-            $value = $value[$part];
-        }
-
-        return null;
+        return ArrayPath::fromString($key)->extractFromArray($this->items);
     }
 
     public function intersectAssoc(AsArray|array ...$arrays): static

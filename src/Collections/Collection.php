@@ -4,6 +4,7 @@ namespace Adapt\Foundation\Collections;
 
 use Adapt\Foundation\Arrays\Arr;
 use Adapt\Foundation\Arrays\AsArray;
+use Adapt\Foundation\Arrays\Foundation;
 use Adapt\Foundation\Arrays\ToArray;
 use Adapt\Foundation\Comparison\Compare;
 use Adapt\Foundation\Strings\Str;
@@ -291,7 +292,7 @@ class Collection extends Arr
             return $this->column($keyOrGlue)->implode($glue);
         }
 
-        return Str::fromString(implode($glue, $this->items));
+        return Str::fromString(implode($keyOrGlue, $this->items));
     }
 
     public function isEmpty(): bool
@@ -702,5 +703,331 @@ class Collection extends Arr
                 return $a[$key] > $b[$key] ? -1 : 1;
             }
         );
+    }
+
+    public function split(int $chunks, bool $preserveKeys = false): static
+    {
+        if ($this->count() === 0) {
+            return static::create();
+        }
+
+        $chunkLength = floor($this->count() / $chunks);
+        return $this->chunk($chunkLength, $preserveKeys);
+    }
+
+    public function take(int $number): static
+    {
+        return $this->slice(0, $number);
+    }
+
+    public function takeUntil(mixed $condition): static
+    {
+        if ($condition instanceof ToString) {
+            $condition = $condition->toString();
+        }
+
+        for ($i = 0; $i < $this->count(); $i++) {
+            $matches = false;
+
+            if ($condition instanceof Closure) {
+                $matches = $condition($this->items[$i]);
+            } elseif ($condition == $this->items[$i]) {
+                $matches = true;
+            }
+
+            if (!$matches) {
+                continue;
+            }
+
+            return $this->slice(0, $i + 1);
+        }
+
+        return $this->collect();
+    }
+
+    public function takeWhile(mixed $condition): static
+    {
+        if ($condition instanceof ToString) {
+            $condition = $condition->toString();
+        }
+
+        for ($i = 0; $i < $this->count(); $i++) {
+            $matches = false;
+
+            if ($condition instanceof Closure) {
+                $matches = $condition($this->items[$i]);
+            } elseif ($condition = $this->items[$i]) {
+                $matches = true;
+            }
+
+            if ($matches) {
+                continue;
+            }
+
+            return $this->slice(0, $i + 1);
+        }
+
+        return $this->collect();
+    }
+
+    public function tap(Closure $closure): static
+    {
+        $closure($this);
+        return $this;
+    }
+
+    public static function times(int $number, Closure $closure): static
+    {
+        return static::fromArray(
+            array_map($closure, static::range(1, $number)->toArray())
+        );
+    }
+
+    public function transform(Closure $closure): static
+    {
+        $this->items = array_map($closure, $this->items);
+        return $this;
+    }
+
+    public function union(AsArray|array $array): static
+    {
+        if ($this->isAssoc()) {
+            return $this->merge($this->diffAssoc($array));
+        }
+
+        return $this->merge($this->diff($array));
+    }
+
+    public function when(bool $condition, Closure $then, Closure|null $else = null): static
+    {
+        if ($condition) {
+            return $then($this);
+        } elseif ($else) {
+            return $else($this);
+        }
+
+        return $this;
+    }
+
+    public function whenEmpty(Closure $then, Closure|null $else = null): static
+    {
+        if ($this->isEmpty()) {
+            return $then($this);
+        } elseif ($else) {
+            return $else($this);
+        }
+
+        return $this;
+    }
+
+    public function whenNotEmpty(Closure $then, Closure|null $else = null): static
+    {
+        if (!$this->isEmpty()) {
+            return $then($this);
+        } elseif ($else) {
+            return $else($this);
+        }
+
+        return $this;
+    }
+
+    public function where(ToString|string $key, mixed $valueOrOperator = null, mixed $value = null): static
+    {
+        if ($key instanceof ToString) {
+            $key = $key->toString();
+        }
+
+        if ($valueOrOperator instanceof ToString) {
+            $valueOrOperator = $valueOrOperator->toString();
+        }
+
+        if ($value instanceof ToString) {
+            $value = $value->toString();
+        }
+
+        return $this->filter(function($item) use ($key, $valueOrOperator, $value) {
+            if (!$item instanceof Foundation && !is_array($item)) {
+                return false;
+            }
+
+            if (!isset($item[$key])) {
+                return false;
+            }
+
+            if ($valueOrOperator && $value) {
+                return Compare::test($item[$key], $valueOrOperator, $value);
+            }
+
+            if ($valueOrOperator) {
+                return Compare::test($item[$key], Compare::EQUALS, $valueOrOperator);
+            }
+
+            return true;
+        });
+    }
+
+    public function whereBetween(ToString|string $key, mixed $min, mixed $max): static
+    {
+        if ($key instanceof ToString) {
+            $key = $key->toString();
+        }
+
+        if ($min instanceof ToString) {
+            $min = $min->toString();
+        }
+
+        if ($max instanceof ToString) {
+            $max = $max->toString();
+        }
+
+        return $this->filter(function($item) use ($key, $min, $max) {
+            if (!$item instanceof Foundation && !is_array($item)) {
+                return false;
+            }
+
+            if (!isset($item[$key])) {
+                return false;
+            }
+
+            if ($item[$key] < $min) {
+                return false;
+            }
+
+            if ($item[$key] > $max) {
+                return false;
+            }
+
+            return true;
+        });
+    }
+
+    public function whereIn(ToString|string $key, AsArray|array $array): static
+    {
+        if ($key instanceof ToString) {
+            $key = $key->toString();
+        }
+
+        if ($array instanceof AsArray) {
+            $array = $array->asArray();
+        }
+
+        return $this->filter(function($item) use ($key, $array) {
+            if (!$item instanceof Foundation && !is_array($item)) {
+                return false;
+            }
+
+            if (!isset($item[$key])) {
+                return false;
+            }
+
+            return in_array($item[$key], $array);
+        });
+    }
+
+    public function whereInstanceOf(ToString|string $class): static
+    {
+        if ($class instanceof ToString) {
+            $class = $class->toString();
+        }
+
+        return $this->filter(function($item) use ($class) {
+            return $item instanceof $class;
+        });
+    }
+
+    public function whereNotBetween(ToString|string $key, mixed $min, mixed $max): static
+    {
+        if ($key instanceof ToString) {
+            $key = $key->toString();
+        }
+
+        if ($min instanceof ToString) {
+            $min = $min->toString();
+        }
+
+        if ($max instanceof ToString) {
+            $max = $max->toString();
+        }
+
+        return $this->filter(function($item) use ($key, $min, $max) {
+            if (!$item instanceof Foundation && !is_array($item)) {
+                return false;
+            }
+
+            if (!isset($item[$key])) {
+                return true;
+            }
+
+            if ($item[$key] < $min) {
+                return true;
+            }
+
+            if ($item[$key] > $max) {
+                return true;
+            }
+
+            return false;
+        });
+    }
+
+    public function whereNotIn(ToString|string $key, AsArray|array $array): static
+    {
+        if ($key instanceof ToString) {
+            $key = $key->toString();
+        }
+
+        if ($array instanceof AsArray) {
+            $array = $array->asArray();
+        }
+
+        return $this->filter(function($item) use ($key, $array) {
+            if (!$item instanceof Foundation && !is_array($item)) {
+                return false;
+            }
+
+            if (!isset($item[$key])) {
+                return true;
+            }
+
+            return !in_array($item[$key], $array);
+        });
+    }
+
+    public function whereNotNull(ToString|string $key): static
+    {
+        if ($key instanceof ToString) {
+            $key = $key->toString();
+        }
+
+        return $this->filter(function($item) use ($key) {
+            if (!$item instanceof Foundation && !is_array($item)) {
+                return false;
+            }
+
+            if (!isset($item[$key])) {
+                return false;
+            }
+
+            return !is_null($item[$key]);
+        });
+    }
+
+    public function whereNull(ToString|string $key): static
+    {
+        if ($key instanceof ToString) {
+            $key = $key->toString();
+        }
+
+        return $this->filter(function($item) use ($key) {
+            if (!$item instanceof Foundation && !is_array($item)) {
+                return false;
+            }
+
+            if (!isset($item[$key])) {
+                return true;
+            }
+
+            return is_null($item[$key]);
+        });
     }
 }

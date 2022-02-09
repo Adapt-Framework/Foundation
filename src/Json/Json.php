@@ -1,16 +1,20 @@
 <?php
 
-namespace Adapt\Foundation\Strings;
+namespace Adapt\Foundation\Json;
 
 use Adapt\Foundation\Arrays\AsArray;
 use Adapt\Foundation\Arrays\ToArray;
 use Adapt\Foundation\Collections\Collection;
+use Adapt\Foundation\Strings\FromString;
+use Adapt\Foundation\Strings\Str;
+use Adapt\Foundation\Strings\ToString;
 
-class StringCollection extends Collection
+class Json extends Collection implements ToString, FromString
 {
     public function __construct(ToArray|AsArray|array $array = [])
     {
         parent::__construct($array);
+
         $this->transform(function ($value) {
             if (is_string($value)) {
                 return Str::fromString($value);
@@ -24,7 +28,11 @@ class StringCollection extends Collection
                 return Str::fromString($value->toString());
             }
 
-            return null;
+            if ($value instanceof ToArray || $value instanceof AsArray || is_array($value)) {
+                return Json::fromArray($value);
+            }
+
+            return $value;
         });
     }
 
@@ -32,7 +40,20 @@ class StringCollection extends Collection
     {
         if (is_string($value)) {
             $value = Str::fromString($value);
+        } elseif ($value instanceof AsArray || $value instanceof ToArray || is_array($value)) {
+            $value = Json::fromArray($value);
         }
+
         parent::offsetSet($offset, $value);
+    }
+
+    public function toString(): string
+    {
+        return json_encode($this->toArray());
+    }
+
+    public static function fromString(string $string): static
+    {
+        return static::fromArray(json_decode($string, true) ?? []);
     }
 }

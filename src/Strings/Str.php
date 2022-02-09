@@ -354,4 +354,9 @@ class Str implements ToString, FromString
         }
         return static::fromString(wordwrap($this->string, $width, $break, $cutLongWords));
     }
+
+    public function __toString(): string
+    {
+        return $this->toString();
+    }
 }
