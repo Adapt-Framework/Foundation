@@ -2,41 +2,15 @@
 
 namespace Adapt\Foundation\Arrays;
 
+use Adapt\Foundation\FileSystem\Path;
 use Adapt\Foundation\Strings\FromString;
 use Adapt\Foundation\Strings\Str;
 use Adapt\Foundation\Strings\StringCollection;
 use Adapt\Foundation\Strings\ToString;
 
-class ArrayPath extends StringCollection implements ToString, FromString
+class ArrayPath extends Path
 {
-    public function __construct(ToArray|AsArray|array|Str|string|null $path = null)
-    {
-        if (!$path) {
-            parent::__construct([]);
-            return;
-        }
-
-        if ($path instanceof AsArray) {
-            parent::__construct($path);
-            return;
-        }
-
-        if ($path instanceof ToArray) {
-            parent::__construct($path->toArray());
-            return;
-        }
-
-        if (is_array($path)) {
-            parent::__construct($path);
-            return;
-        }
-
-        if (is_string($path)) {
-            $path = Str::fromString($path);
-        }
-
-        parent::__construct($path->explode('.')->toArray());
-    }
+    protected const PATH_SEPARATOR = '.';
 
     public function extractFromArray(AsArray|ToArray|array $array): mixed
     {
@@ -52,16 +26,4 @@ class ArrayPath extends StringCollection implements ToString, FromString
 
         return $array;
     }
-
-    public static function fromString(string $string): static
-    {
-        return new static($string);
-    }
-
-    public function toString(): string
-    {
-        return $this->implode('.')->toString();
-    }
-
-
 }

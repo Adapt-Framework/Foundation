@@ -43,6 +43,21 @@ class ArrTest extends TestCase
         $this->assertTrue(Arr::fromArray($array)->isAssoc());
     }
 
+    public function testKeys(): void
+    {
+        $array = [
+            'one' => 1,
+            'two' => 2,
+            'three' => 3
+        ];
+
+        $arr = Arr::fromArray($array);
+        $this->assertEquals(['one', 'two', 'three'], $arr->keys()->toArray());
+
+        $array = ['one', 'two', 'three'];
+        $this->assertEquals([0, 1, 2], Arr::fromArray($array)->keys()->toArray());
+    }
+
     public function testUpperCaseKeys(): void
     {
         $array = [
@@ -243,6 +258,25 @@ class ArrTest extends TestCase
         $this->assertEquals($expected, Arr::fromArray($array)->flip()->toArray());
     }
 
+    public function testGet(): void
+    {
+        $array = [
+            'users' => [
+                [
+                    'username' => 'matt',
+                    'password' => 'password',
+                    'name' => [
+                        'first' => 'Matt',
+                        'last' => 'B'
+                    ]
+                ]
+            ]
+        ];
+
+        $this->assertEquals('matt', Arr::fromArray($array)->get('users.0.username'));
+        $this->assertEquals('Matt', Arr::fromArray($array)->get('users.0.name.first'));
+    }
+
     public function testIntersectAssoc(): void
     {
         $array1 = ["a" => "green", "b" => "brown", "c" => "blue", "red"];
@@ -317,11 +351,6 @@ class ArrTest extends TestCase
         $this->assertEquals('three', Arr::fromArray($array)->keyLast());
     }
 
-    public function testKeys(): void
-    {
-        $array = ['one', 'two', 'three'];
-        $this->assertEquals([0, 1, 2], Arr::fromArray($array)->keys()->toArray());
-    }
 
     public function testMap(): void
     {
@@ -403,6 +432,19 @@ class ArrTest extends TestCase
         );
     }
 
+    public function testReplaceRecursive(): void
+    {
+        $base = ['citrus' => [ "orange"] , 'berries' => ["blackberry", "raspberry"]];
+        $replacements = ['citrus' => ['pineapple'], 'berries' => ['blueberry']];
+        $this->assertEquals(
+            [
+                'citrus' => ['pineapple'],
+                'berries' => ['blueberry', 'raspberry']
+            ],
+            Arr::fromArray($base)->replaceRecursive($replacements)->toArray()
+        );
+    }
+
     public function testReverse(): void
     {
         $array = ['one' => 1, 'two' => 2, 'three' => 3];
@@ -449,6 +491,143 @@ class ArrTest extends TestCase
     public function testUnique(): void
     {
         $array = [1, 2, 2, 3, 3, 3];
-        $this->assertEquals([1, 2, 3], Arr::fromArray($array)->unique()->toArray());
+        $this->assertEquals([1, 2, 3], Arr::fromArray($array)->unique()->values()->toArray());
+    }
+
+    public function testUnshift(): void
+    {
+        $array = ['orange', 'banana'];
+        $arr = Arr::fromArray($array);
+        $arr->unshift(
+            'apple', 'raspberry'
+        );
+
+        $this->assertEquals(
+            ['apple', 'raspberry', 'orange', 'banana'],
+            $arr->toArray()
+        );
+    }
+
+    public function testValues(): void
+    {
+        $array = [0 => 'blue', 1 => 'red', 2 => 'green', 3 => 'red'];
+        $arr = Arr::fromArray($array);
+        $this->assertEquals(
+            ['blue', 'red', 'green', 'red'],
+            $arr->values()->toArray()
+        );
+    }
+
+    public function testWalk(): void
+    {
+        $array = [1, 2, 3, 4, 5];
+        $counter = 0;
+        $lastArg = null;
+        $arr = Arr::fromArray($array);
+
+        $arr->walk(
+            function($item, $key, $arg1) use (&$counter, &$lastArg) {
+                $lastArg = $arg1;
+                $counter++;
+            },
+            'arg'
+        );
+
+        $this->assertEquals(5, $counter);
+        $this->assertEquals('arg', $lastArg);
+    }
+
+    public function testSortAscending(): void
+    {
+        $array = [5, 4, 3, 2, 1];
+        $arr = Arr::fromArray($array);
+        $arr->sortAscending();
+
+        $this->assertEquals(
+            [1, 2, 3, 4, 5],
+            $arr->toArray()
+        );
+    }
+
+    public function testSortDescending(): void
+    {
+        $array = [1, 2, 3, 4, 5];
+        $arr = Arr::fromArray($array);
+        $arr->sortDescending();
+
+        $this->assertEquals(
+            [5, 4, 3, 2, 1],
+            $arr->toArray()
+        );
+    }
+
+    public function testIn(): void
+    {
+        $array = ['a', 'b', 'c', 'd', 'e'];
+        $arr = Arr::fromArray($array);
+
+        $this->assertTrue($arr->in('a'));
+        $this->assertTrue($arr->in('c'));
+        $this->assertTrue($arr->in('e'));
+        $this->assertFalse($arr->in('x'));
+        $this->assertFalse($arr->in('y'));
+        $this->assertFalse($arr->in('z'));
+    }
+
+    public function testSortKeysAscending(): void
+    {
+        $array = ['c' => 1, 'b' => 2, 'a' => 3];
+        $arr = Arr::fromArray($array);
+        $arr->sortKeysAscending();
+
+        $this->assertEquals(
+            ['a' => 3, 'b' => 2, 'c' => 1],
+            $arr->toArray()
+        );
+    }
+
+    public function testSortKeysDescending(): void
+    {
+        $array = ['a' => 3, 'b' => 2, 'c' => 1];
+        $arr = Arr::fromArray($array);
+        $arr->sortKeysDescending();
+
+        $this->assertEquals(
+            ['c' => 1, 'b' => 2, 'a' => 3],
+            $arr->toArray()
+        );
+    }
+
+    public function testSortNaturally(): void
+    {
+        $array = ["img12.png", "img10.png", "img2.png", "img1.png"];
+        $arr = Arr::fromArray($array);
+
+        $arr->sortNaturally();
+        $this->assertEquals(
+            ['img1.png', 'img2.png', 'img10.png', 'img12.png'],
+            $arr->toArray()
+        );
+    }
+
+    public function testRange(): void
+    {
+        $this->assertEquals(
+            [1, 2, 3, 4, 5],
+            Arr::range(1, 5)->toArray()
+        );
+    }
+
+    public function testShuffle(): void
+    {
+        $array = [1, 2, 3, 4, 5];
+        $arr = Arr::fromArray($array);
+        $arr->shuffle();
+        $this->assertNotEquals(
+            $array,
+            $arr->toArray()
+        );
+
+        $this->assertCount(5, $arr);
     }
 }
