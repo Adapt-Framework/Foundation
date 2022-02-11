@@ -56,4 +56,23 @@ class Json extends Collection implements ToString, FromString
     {
         return static::fromArray(json_decode($string, true) ?? []);
     }
+
+    public function toArray(): array
+    {
+        $output = $this->items;
+        array_walk(
+            $output,
+            function (&$value, $key) {
+                if ($value instanceof ToArray) {
+                    $value = $value->toArray();
+                } elseif ($value instanceof AsArray) {
+                    $value = $value->asArray();
+                } elseif ($value instanceof ToString) {
+                    $value = $value->toString();
+                }
+            }
+        );
+
+        return $output;
+    }
 }
