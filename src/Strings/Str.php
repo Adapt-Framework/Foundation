@@ -45,6 +45,16 @@ class Str implements ToString, FromString
         return static::fromString($string);
     }
 
+    public function urlencode(): static
+    {
+        return static::fromString(urlencode($this->toString()));
+    }
+
+    public function urldecode(): static
+    {
+        return static::fromString(urldecode($this->toString()));
+    }
+
     public function countChars(int $mode = 0): StringCollection|static
     {
         $output = count_chars($this->string, $mode);
@@ -83,7 +93,7 @@ class Str implements ToString, FromString
         return static::fromString(lcfirst($this->string));
     }
 
-    public function leftTrim(ToString|string $characters = "\n\r\t\v\x00"): static
+    public function leftTrim(ToString|string $characters = " \n\r\t\v\x00"): static
     {
         if ($characters instanceof ToString) {
             $characters = $characters->toString();
@@ -102,7 +112,7 @@ class Str implements ToString, FromString
         return static::fromString(metaphone($this->string, $maxPhonemes));
     }
 
-    public function rightTrim(ToString|string $characters = "\n\r\t\v\x00"): static
+    public function rightTrim(ToString|string $characters = " \n\r\t\v\x00"): static
     {
         if ($characters instanceof ToString) {
             $characters = $characters->toString();
@@ -164,7 +174,11 @@ class Str implements ToString, FromString
         return str_ends_with($this->string, $needle);
     }
 
-    public function getCsv(ToString|string $separator = ',', ToString|string $enclosure = '"', ToString|string $escape = "\\"): StringCollection
+    public function getCsv(
+        ToString|string $separator = ',',
+        ToString|string $enclosure = '"',
+        ToString|string $escape = "\\"
+    ): StringCollection
     {
         if ($separator instanceof ToString) {
             $separator = $separator->toString();
@@ -181,7 +195,12 @@ class Str implements ToString, FromString
         return StringCollection::fromArray(str_getcsv($this->string, $separator, $enclosure, $escape));
     }
 
-    public function replace(ToString|string $search, ToString|string $replace, bool $caseSensitive = true, int &$count = null): static
+    public function replace(
+        ToString|string $search,
+        ToString|string $replace,
+        bool $caseSensitive = true,
+        int &$count = null
+    ): static
     {
         if ($search instanceof ToString) {
             $search = $search->toString();
@@ -267,7 +286,11 @@ class Str implements ToString, FromString
         return stripos($this->string, $needle, $offset);
     }
 
-    public function findFirst(ToString|string $needle, bool $beforeNeedle = false, bool $caseSensitive = true): static|false
+    public function findFirst(
+        ToString|string $needle,
+        bool $beforeNeedle = false,
+        bool $caseSensitive = true
+    ): static|false
     {
         if ($needle instanceof ToString) {
             $needle = $needle->toString();
@@ -325,7 +348,7 @@ class Str implements ToString, FromString
         return static::fromString(substr($this->string, $offset, $length));
     }
 
-    public function trim(ToString|string $characters = "\n\r\t\v\x00"): static
+    public function trim(ToString|string $characters = " \n\r\t\v\x00"): static
     {
         if ($characters instanceof ToString) {
             $characters = $characters->toString();

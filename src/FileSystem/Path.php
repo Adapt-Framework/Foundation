@@ -42,6 +42,31 @@ class Path extends StringCollection implements ToString, FromString
         parent::__construct($path->explode(static::PATH_SEPARATOR)->toArray());
     }
 
+    public function exists(): bool
+    {
+        return file_exists($this->toString());
+    }
+
+    public function isDirectory(): bool
+    {
+        return is_dir($this->toString());
+    }
+
+    public function isFile(): bool
+    {
+        return is_file($this->toString());
+    }
+
+    public function isLink(): bool
+    {
+        return is_link($this->toString());
+    }
+
+    public function isExecutable(): bool
+    {
+        return is_executable($this->toString());
+    }
+
     public static function fromString(string $string): static
     {
         return new static($string);

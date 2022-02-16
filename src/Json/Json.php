@@ -75,4 +75,11 @@ class Json extends Collection implements ToString, FromString
 
         return $output;
     }
+
+    public function __toString(): string
+    {
+        return $this->toString();
+    }
+
+
 }

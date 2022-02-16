@@ -18,10 +18,14 @@ class Collection extends Arr
         return $this->asArray();
     }
 
-    public function average(ToString|string $key): float|int
+    public function average(ToString|string|null $key = null): float|int
     {
         if (!$this->count()) {
             return 0;
+        }
+
+        if (is_null($key)) {
+            return $this->filter()->sum() / $this->count();
         }
 
         if ($key instanceof ToString) {
@@ -115,10 +119,9 @@ class Collection extends Arr
             $item = [$value];
             foreach ($arrays as $array) {
                 foreach ($array as $a) {
-                    $item = array_merge($item, [$a]);
+                    $output[] = static::fromArray(array_merge($item, [$a]));
                 }
             }
-            $output[] = static::fromArray($item);
         }
         return $output;
     }
@@ -133,15 +136,32 @@ class Collection extends Arr
         $closure = function ($value) {
             return $value > 1;
         };
-        if (!$key) {
-            return $this->countBy()->filter($closure)->flip();
-        }
+
+        $output = static::create();
+
+        $lastValue = null;
+
+        $values = $this->collect();
 
         if ($key instanceof ToString) {
             $key = $key->toString();
         }
 
-        return $this->column($key)->countBy()->filter($closure)->flip();
+        if ($key) {
+            $values = $values->column($key);
+        }
+
+        $values->sortAscending(true);
+        $values->each(function($item, $key) use (&$output, &$lastValue) {
+            if ($item === $lastValue) {
+                $output[$key] = $item;
+            }
+
+            $lastValue = $item;
+        });
+
+        $output->sortKeysAscending();
+        return $output;
     }
 
     public function each(Closure $closure): static
@@ -212,7 +232,7 @@ class Collection extends Arr
             }
 
             if (!$value) {
-                if (Compare::test($item[$key], Compare::EQUALS, $value)) {
+                if (Compare::test($item[$key], Compare::EQUALS, $valueOrOperator)) {
                     return static::fromArray($item);
                 }
                 continue;
@@ -228,12 +248,26 @@ class Collection extends Arr
 
     public function flatMap(Closure $closure): static
     {
-        // @todo
+        return $this->map($closure)->collapse();
     }
 
     public function flatten(int|null $depth = null): static
     {
-        // @todo
+        if (is_null($depth)) {
+            $depth = 1;
+        }
+
+        $output = static::create();
+
+        foreach($this->items as $item) {
+            if (is_array($item) && $depth > 0) {
+                $output = $output->merge(static::fromArray($item)->flatten(--$depth));
+            } else {
+                $output[] = $item;
+            }
+        }
+
+        return $output;
     }
 
     public function forget(ToString|string $key): static
@@ -259,10 +293,11 @@ class Collection extends Arr
 
             foreach ($item as $key => $value) {
                 $groupValue = is_string($grouping) ? $grouping : $grouping($value, $key);
-                if (!isset($output[$groupValue])) {
-                    $output[$groupValue] = static::create();
+                $groupKey = $item[$groupValue];
+                if (!isset($output[$groupKey])) {
+                    $output[$groupKey] = static::create();
                 }
-                $output[$groupValue][] = $item;
+                $output[$groupKey][] = $item;
             }
         }
 
@@ -297,7 +332,7 @@ class Collection extends Arr
 
     public function isEmpty(): bool
     {
-        return (bool)$this->count();
+        return !(bool)$this->count();
     }
 
     public function isNotEmpty(): bool

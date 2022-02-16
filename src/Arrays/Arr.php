@@ -384,6 +384,7 @@ class Arr extends Foundation
 
     public function values(): static
     {
+        print_r($this->items);
         return static::fromArray(array_values($this->items));
     }
 

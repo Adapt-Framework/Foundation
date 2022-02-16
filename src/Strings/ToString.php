@@ -2,7 +2,9 @@
 
 namespace Adapt\Foundation\Strings;
 
-interface ToString
+use Stringable;
+
+interface ToString extends Stringable
 {
     public function toString(): string;
 }

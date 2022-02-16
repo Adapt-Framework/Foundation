@@ -14,6 +14,7 @@ Some key features covered by the docs include:
 - Arrays
 - Collections
 - Strings
+- Json
 - Comparisons
 - ...
 
@@ -88,4 +89,7 @@ converted to PHP arrays.
 
 So `ToArray` is recursive whereas `AsArray` isn't.
 
+## Collections
+Building on `Arr` we have the `Collection` class that goes way beyond the basic array 
+functionality and allows for complex maniplulation with ease.
 
