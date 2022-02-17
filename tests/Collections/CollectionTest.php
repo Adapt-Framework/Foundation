@@ -4,6 +4,8 @@ namespace Tests\Adapt\Foundation\Collections;
 
 use Adapt\Foundation\Collections\Collection;
 use PHPUnit\Framework\TestCase;
+use Tests\Adapt\Foundation\Collections\TestClasses\Currency;
+use Tests\Adapt\Foundation\Collections\TestClasses\ResourceClass;
 
 class CollectionTest extends TestCase
 {
@@ -307,207 +309,600 @@ class CollectionTest extends TestCase
 
     public function testHas(): void
     {
+        $collection = Collection::fromArray([
+            'name' => 'Matt',
+            'age' => 42
+        ]);
+
+        $this->assertTrue($collection->has('name'));
+        $this->assertTrue($collection->has('age'));
+        $this->assertFalse($collection->has('address'));
 
     }
 
     public function testImplode(): void
     {
+        $collection = Collection::fromArray(['Foo', 'Bar', 'Foobar']);
+        $this->assertEquals(
+            'Foo|Bar|Foobar',
+            $collection->implode('|')->toString()
+        );
 
+        $collection = Collection::fromArray([
+            ['name' => 'Matt', 'age' => 42],
+            ['name' => 'James', 'age' => 30],
+            ['name' => 'Luke', 'age' => 35],
+        ]);
+
+        $this->assertEquals(
+            'Matt, James, Luke',
+            $collection->implode('name', ', ')->toString()
+        );
     }
 
     public function testIsEmpty(): void
     {
-
+        $collection = Collection::create();
+        $this->assertTrue($collection->isEmpty());
+        $collection[] = 'Hello';
+        $this->assertFalse($collection->isEmpty());
     }
 
     public function testIsNotEmpty(): void
     {
-
+        $collection = Collection::create();
+        $this->assertFalse($collection->isNotEmpty());
+        $collection[] = 'Hello';
+        $this->assertTrue($collection->isNotEmpty());
     }
 
     public function testJoin(): void
     {
+        $collection = Collection::fromArray(['a', 'b', 'c']);
+        $this->assertEquals('a, b, c', $collection->join(', '));
 
+        $this->assertEquals('a, b and c', $collection->join(', ', ' and '));
+
+        $collection->pop();
+        $this->assertEquals('a, b', $collection->join(', '));
+
+        $this->assertEquals('a and b', $collection->join(', ', ' and '));
+
+        $collection->pop();
+        $this->assertEquals(
+            'a',
+            $collection->join(', ')
+        );
+
+        $this->assertEquals(
+            'a',
+            $collection->join(', ', ' and ')
+        );
+
+        $collection->pop();
+        $this->assertEquals(
+            '',
+            $collection->join(', ')
+        );
+
+        $this->assertEquals(
+            '',
+            $collection->join(', ', ' and ')
+        );
     }
 
     public function testKeyBy(): void
     {
+        $collection = Collection::fromArray([
+            ['product_id' => 'prod-100', 'name' => 'Desk'],
+            ['product_id' => 'prod-200', 'name' => 'Chair'],
+        ]);
 
+        $keyed = $collection->keyBy('product_id');
+
+        $this->assertEquals(
+            [
+                'prod-100' => ['product_id' => 'prod-100', 'name' => 'Desk'],
+                'prod-200' => ['product_id' => 'prod-200', 'name' => 'Chair'],
+            ],
+            $keyed->asArray()
+        );
+
+        $keyed = $collection->keyBy(function ($item) {
+            return strtoupper($item['product_id']);
+        });
+
+        $this->assertEquals(
+            [
+                'PROD-100' => ['product_id' => 'prod-100', 'name' => 'Desk'],
+                'PROD-200' => ['product_id' => 'prod-200', 'name' => 'Chair'],
+            ],
+            $keyed->asArray()
+        );
     }
 
     public function testMake(): void
     {
+        $collection = Collection::make(function () {
+            return [1, 2, 3];
+        });
 
+        $this->assertCount(3, $collection);
     }
 
     public function testMapInto(): void
     {
-
+        $collection = Collection::fromArray(['GBP', 'EUR', 'USD'])->mapInto(Currency::class);
+        $this->assertCount(3, $collection);
+        $this->assertInstanceOf(Currency::class, $collection[0]);
+        $this->assertEquals('GBP', $collection[0]->code);
+        $this->assertInstanceOf(Currency::class, $collection[1]);
+        $this->assertEquals('EUR', $collection[1]->code);
+        $this->assertInstanceOf(Currency::class, $collection[2]);
+        $this->assertEquals('USD', $collection[2]->code);
     }
 
     public function testMapSpread(): void
     {
+        $collection = Collection::fromArray([0, 1, 2, 3, 4, 5, 6, 7, 8, 9])
+            ->chunk(2)
+            ->mapSpread(function ($odd, $even) {
+                return $odd + $even;
+            });
 
+        $this->assertEquals(
+            [1, 5, 9, 13, 17],
+            $collection->asArray()
+        );
     }
 
     public function testMapToGroup(): void
     {
+        $collection = Collection::fromArray([
+            [
+                'name' => 'John Doe',
+                'department' => 'Sales',
+            ],
+            [
+                'name' => 'Jane Doe',
+                'department' => 'Sales',
+            ],
+            [
+                'name' => 'Johnny Doe',
+                'department' => 'Marketing',
+            ]
+        ])->mapToGroup(function ($item, $key) {
+            return [$item['department'] => $item['name']];
+        });
 
+        $this->assertEquals([
+            'Sales' => ['John Doe', 'Jane Doe'],
+            'Marketing' => ['Johnny Doe'],
+        ], $collection->asArray());
     }
 
     public function testMapWithKeys(): void
     {
+        $collection = Collection::fromArray([
+            [
+                'name' => 'John',
+                'department' => 'Sales',
+                'email' => 'john@example.com',
+            ],
+            [
+                'name' => 'Jane',
+                'department' => 'Marketing',
+                'email' => 'jane@example.com',
+            ]
+        ])->mapWithKeys(function ($item, $key) {
+            return [$item['email'] => $item['name']];
+        });
 
+        $this->assertEquals(
+            [
+                'john@example.com' => 'John',
+                'jane@example.com' => 'Jane',
+            ],
+            $collection->asArray()
+        );
     }
 
     public function testMax(): void
     {
+        $collection = Collection::fromArray([1, 2, 3, 4, 5]);
+        $this->assertEquals(5, $collection->max());
 
+        $collection = Collection::fromArray([
+            ['foo' => 1, 'bar' => 10],
+            ['foo' => 2, 'bar' => 20],
+            ['foo' => 3, 'bar' => 30],
+            ['foo' => 4, 'bar' => 40],
+            ['foo' => 5, 'bar' => 50],
+        ]);
+        $this->assertEquals(5, $collection->max('foo'));
+        $this->assertEquals(50, $collection->max('bar'));
     }
 
     public function testMedian(): void
     {
+        $collection = Collection::fromArray([1, 1, 2, 4]);
+        $this->assertEquals(1.5, $collection->median());
 
-    }
-
-    public function testMergeRecursive(): void
-    {
-
+        $collection = Collection::fromArray([
+            ['foo' => 1, 'bar' => 10],
+            ['foo' => 2, 'bar' => 20],
+            ['foo' => 3, 'bar' => 30],
+            ['foo' => 4, 'bar' => 40],
+            ['foo' => 5, 'bar' => 50],
+        ]);
+        $this->assertEquals(30, $collection->median('bar'));
     }
 
     public function testMin(): void
     {
+        $collection = Collection::fromArray([1, 2, 3, 4, 5]);
+        $this->assertEquals(1, $collection->min());
 
+        $collection = Collection::fromArray([
+            ['foo' => 1, 'bar' => 10],
+            ['foo' => 2, 'bar' => 20],
+            ['foo' => 3, 'bar' => 30],
+            ['foo' => 4, 'bar' => 40],
+            ['foo' => 5, 'bar' => 50],
+        ]);
+        $this->assertEquals(1, $collection->min('foo'));
+        $this->assertEquals(10, $collection->min('bar'));
     }
 
     public function testMode(): void
     {
+        $collection = Collection::fromArray([1, 1, 1, 2, 2, 2, 3]);
+        $this->assertEquals([1, 2], $collection->mode());
 
+        $collection = Collection::fromArray([
+            ['foo' => 1, 'bar' => 10],
+            ['foo' => 1, 'bar' => 10],
+            ['foo' => 2, 'bar' => 20],
+            ['foo' => 4, 'bar' => 40],
+            ['foo' => 5, 'bar' => 50],
+        ]);
+        $this->assertEquals(1, $collection->mode('foo'));
+        $this->assertEquals(10, $collection->mode('bar'));
     }
 
     public function testNth(): void
     {
+        $collection = Collection::fromArray(['a', 'b', 'c', 'd', 'e', 'f']);
+        $this->assertEquals(
+            ['a', 'e'],
+            $collection->nth(4)->asArray()
+        );
 
+        $this->assertEquals(
+            ['b', 'f'],
+            $collection->nth(4, 1)->asArray()
+        );
     }
 
     public function testOnly(): void
     {
+        $collection = Collection::fromArray([
+            'product_id' => 1,
+            'name' => 'Desk',
+            'price' => 100,
+            'discount' => false
+        ])->only(['product_id', 'name']);
 
+        $this->assertEquals(
+            ['product_id' => 1, 'name' => 'Desk'],
+            $collection->asArray()
+        );
     }
 
     public function testPartition(): void
     {
+        [$lower, $upper] = Collection::fromArray([1, 2, 3, 4, 5, 6])
+            ->partition(function ($i) {
+                return $i < 3;
+            });
 
+        $this->assertInstanceOf(Collection::class, $lower);
+        $this->assertInstanceOf(Collection::class, $upper);
+
+        $this->assertCount(2, $lower);
+        $this->assertCount(4, $upper);
+
+        $this->assertEquals([1, 2], $lower->asArray());
+        $this->assertEquals([3, 4, 5, 6], $upper->asArray());
     }
 
     public function testPipe(): void
     {
+        $sum = Collection::fromArray([1, 2, 3])
+            ->pipe(function ($collection) {
+                return $collection->sum();
+            });
 
+        $this->assertEquals(6, $sum);
     }
 
     public function testPipeInto(): void
     {
-
+        $resource = Collection::fromArray([1, 2, 3])->pipeInto(ResourceClass::class);
+        $this->assertInstanceOf(ResourceClass::class, $resource);
+        $this->assertInstanceOf(Collection::class, $resource->collection);
+        $this->assertEquals(
+            [1, 2, 3],
+            $resource->collection->asArray()
+        );
     }
 
     public function testPipeThrough(): void
     {
+        $mergeFunction = function (Collection $collection) {
+            return $collection->merge([4, 5]);
+        };
 
+        $sumFunction = function (Collection $collection) {
+            return $collection->sum();
+        };
+
+        $result = Collection::fromArray([1, 2, 3])->pipeThrough([$mergeFunction, $sumFunction]);
+        $this->assertEquals(15, $result);
     }
 
     public function testPluck(): void
     {
+        $collection = Collection::fromArray([
+            ['product_id' => 'prod-100', 'name' => 'Desk'],
+            ['product_id' => 'prod-200', 'name' => 'Chair'],
+        ])->pluck('name');
 
+        $this->assertEquals(
+            ['Desk', 'Chair'],
+            $collection->asArray()
+        );
     }
 
     public function testPrepend(): void
     {
-
+        $collection = Collection::fromArray([2, 3, 4, 5, 6])->prepend(1);
+        $this->assertEquals(
+            [1, 2, 3, 4, 5, 6],
+            $collection->asArray()
+        );
     }
 
     public function testPull(): void
     {
+        $collection = Collection::fromArray(['product_id' => 'prod-100', 'name' => 'Desk']);
 
+        $pulledItem = $collection->pull('name');
+        $this->assertEquals('Desk', $pulledItem);
+        $this->assertEquals(['product_id' => 'prod-100'], $collection->asArray());
     }
 
     public function testPut(): void
     {
-
+        $collection = Collection::fromArray(['product_id' => 1, 'name' => 'Desk']);
+        $collection->put('price', 100);
+        $this->assertEquals(
+            ['product_id' => 1, 'name' => 'Desk', 'price' => 100],
+            $collection->asArray()
+        );
     }
 
     public function testReduceSpread(): void
     {
-
+        // @todo Check how this is meant to work
     }
 
     public function testReject(): void
     {
+        $collection = Collection::fromArray([1, 2, 3, 4])
+            ->reject(function ($value, $key) {
+                return $value > 2;
+            });
 
+        $this->assertEquals(
+            [1, 2],
+            $collection->asArray()
+        );
     }
 
     public function testSliding(): void
     {
+        $collection = Collection::fromArray([1, 2, 3, 4, 5])
+            ->sliding(2);
+        $this->assertEquals(
+            [[1, 2], [2, 3], [3, 4], [4, 5]],
+            $collection->toArray()
+        );
 
+        $collection = Collection::fromArray([1, 2, 3, 4, 5])
+            ->sliding(3);
+        $this->assertEquals(
+            [[1, 2, 3], [2, 3, 4], [3, 4, 5]],
+            $collection->toArray()
+        );
+
+        $collection = Collection::fromArray([1, 2, 3, 4, 5])
+            ->sliding(3, 2);
+        $this->assertEquals(
+            [[1, 2, 3], [3, 4, 5]],
+            $collection->toArray()
+        );
     }
 
     public function testSkip(): void
     {
-
+        $collection = Collection::fromArray([1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
+            ->skip(4);
+        $this->assertEquals(
+            [5, 6, 7, 8, 9, 10],
+            $collection->asArray()
+        );
     }
 
     public function testSkipUntil(): void
     {
+        $collection = Collection::fromArray([1, 2, 3, 4])
+            ->skipUntil(function ($item) {
+                return $item >= 3;
+            });
+        $this->assertEquals(
+            [3, 4],
+            $collection->asArray()
+        );
 
+        $collection = Collection::fromArray([1, 2, 3, 4])
+            ->skipUntil(3);
+        $this->assertEquals(
+            [3, 4],
+            $collection->asArray()
+        );
     }
 
     public function testSkipWhile(): void
     {
-
+        $collection = Collection::fromArray([1, 2, 3, 4])
+            ->skipWhile(function ($item) {
+                return $item <= 3;
+            });
+        $this->assertEquals(
+            [4],
+            $collection->asArray()
+        );
     }
 
     public function testSole(): void
     {
+        $collection = Collection::fromArray([1, 2, 3, 4]);
+        $this->assertEquals(2, $collection->sole(function ($value, $key) {
+            return $value === 2;
+        }));
+
+        $collection = Collection::fromArray([1, 2, 2, 3, 4]);
+        $this->assertFalse($collection->sole(function ($value, $key) {
+            return $value === 2;
+        }));
+
+        $collection = Collection::fromArray([
+            ['product' => 'Desk', 'price' => 200],
+            ['product' => 'Chair', 'price' => 100],
+        ]);
+
+        $this->assertEquals(
+            ['product' => 'Chair', 'price' => 100],
+            $collection->sole('product', 'Chair')
+        );
+
 
     }
 
     public function testSort(): void
     {
+        $collection = Collection::fromArray([10, 9, 8, 7, 6, 5, 4, 3, 2, 1]);
+        $collection->sort();
+        $this->assertEquals(
+            [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
+            $collection->asArray()
+        );
 
+        $collection = Collection::fromArray([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
+        $collection->sort(function ($a, $b) {
+            if ($a === $b) {
+                return 0;
+            }
+
+            return ($a > $b) ? -1 : 1;
+        });
+
+        $this->assertEquals(
+            [10, 9, 8, 7, 6, 5, 4, 3, 2, 1],
+            $collection->asArray()
+        );
     }
 
     public function testSortByKeyAscending(): void
     {
+        $collection = Collection::fromArray([
+            ['name' => 'Desk', 'price' => 200],
+            ['name' => 'Chair', 'price' => 100],
+            ['name' => 'Bookcase', 'price' => 150],
+        ]);
 
+        $collection->sortByKeyAscending('price');
+        $this->assertEquals([
+            ['name' => 'Chair', 'price' => 100],
+            ['name' => 'Bookcase', 'price' => 150],
+            ['name' => 'Desk', 'price' => 200],
+        ], $collection->asArray());
     }
 
     public function testSortByKeyDescending(): void
     {
+        $collection = Collection::fromArray([
+            ['name' => 'Desk', 'price' => 200],
+            ['name' => 'Chair', 'price' => 100],
+            ['name' => 'Bookcase', 'price' => 150],
+        ]);
 
+        $collection->sortByKeyDescending('name');
+        $this->assertEquals([
+            ['name' => 'Desk', 'price' => 200],
+            ['name' => 'Chair', 'price' => 100],
+            ['name' => 'Bookcase', 'price' => 150],
+        ], $collection->asArray());
     }
 
     public function testSplit(): void
     {
-
+        $collection = Collection::fromArray([1, 2, 3, 4, 5])
+            ->split(3);
+        $this->assertCount(3, $collection);
+        $this->assertEquals(
+            [[1, 2], [3, 4], [5]],
+            $collection->toArray()
+        );
     }
 
     public function testTake(): void
     {
-
+        $collection = Collection::fromArray([0, 1, 2, 3, 4, 5])
+            ->take(3);
+        $this->assertEquals([0, 1, 2], $collection->asArray());
     }
 
     public function testTakeUntil(): void
     {
+        $collection = Collection::fromArray([1, 2, 3, 4])
+            ->takeUntil(function ($item) {
+                return $item >= 3;
+            });
 
+        $this->assertEquals(
+            [1, 2],
+            $collection->asArray()
+        );
     }
 
     public function testTakeWhile(): void
     {
+        $collection = Collection::fromArray([1, 2, 3, 4])
+            ->takeWhile(function ($item) {
+                return $item < 3;
+            });
 
+        $this->assertEquals(
+            [1, 2],
+            $collection->asArray()
+        );
     }
 
     public function testTap(): void
     {
-
+        // @todo Rethink if sort should return a new collection
     }
 
     public function testTimes(): void

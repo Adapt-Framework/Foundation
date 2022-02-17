@@ -373,7 +373,7 @@ class Collection extends Arr
                 continue;
             }
 
-            $keyName = is_string($key) ? $this->items[$key] : $key($item);
+            $keyName = is_string($key) ? $item[$key] : $key($item);
             $output[$keyName] = $item;
         }
 
@@ -402,7 +402,7 @@ class Collection extends Arr
     public function mapSpread(Closure $closure): static
     {
         return $this->map(function ($item) use ($closure) {
-            if (is_array($item)) {
+            if (is_array($item) || $item instanceof AsArray) {
                 return $closure(...$item);
             }
 
@@ -414,7 +414,14 @@ class Collection extends Arr
     {
         $output = static::create();
         foreach ($this->items as $key => $value) {
-            $output = $output->merge($closure($value, $key));
+            $processed = $closure($value, $key);
+            $processedKey = array_keys($processed)[0];
+            $processed[$processedKey] = [$processed[$processedKey]];
+            if (isset($output[$processedKey])) {
+                $output[$processedKey] = array_merge($output[$processedKey], $processed[$processedKey]);
+            } else {
+                $output = $output->merge($processed);
+            }
         }
 
         return $output;
@@ -422,7 +429,11 @@ class Collection extends Arr
 
     public function mapWithKeys(Closure $closure): static
     {
-        // @todo
+        $output = static::create();
+        $this->each(function ($item, $key) use (&$output, $closure) {
+            $output = $output->merge($closure($item, $key));
+        });
+        return $output;
     }
 
     public function max(ToString|string|null $key = null): mixed
@@ -459,11 +470,6 @@ class Collection extends Arr
         return (($lowerValue + $upperValue) / 2);
     }
 
-    public function mergeRecursive(AsArray|array ...$arrays): static
-    {
-        // @todo... (Move to Arr?)
-    }
-
     public function min(ToString|string|null $key = null): mixed
     {
         if (!$key) {
@@ -475,12 +481,45 @@ class Collection extends Arr
 
     public function mode(ToString|string|null $key = null): mixed
     {
-        // @todo
+        $collection = $this->collect();
+        if ($key) {
+            $collection = $collection->column($key);
+        }
+        $counts = $collection->countBy();
+        $counts->sortDescending(true);
+
+        if ($counts->isEmpty()) {
+            return null;
+        }
+
+        $highestCount = $counts[$counts->keys()[0]];
+        $returnValues = [$counts->keys()[0]];
+
+        for($i = 1; $i < $counts->count(); $i++) {
+            $index = $counts->keys()[$i];
+            if ($counts[$index] !== $highestCount) {
+                continue;
+            }
+
+            $returnValues[] = $counts->keys()[$i];
+        }
+
+        if (count($returnValues) === 1) {
+            return $returnValues[0];
+        }
+
+        return $returnValues;
     }
 
     public function nth(int $every, int|null $offset = null): static
     {
-        // @todo
+        $output = static::create();
+        for($i = $offset ?? 0; $i < $this->count(); $i += $every) {
+            $index = $this->keys()[$i];
+            $output[] = $this[$index];
+        }
+
+        return $output;
     }
 
     public function only(AsArray|array $keys): static
@@ -570,7 +609,7 @@ class Collection extends Arr
         return $output;
     }
 
-    public function prepend(mixed $value, mixed $key = null): void
+    public function prepend(mixed $value, mixed $key = null): static
     {
         if ($key instanceof ToString) {
             $key = $key->toString();
@@ -583,7 +622,7 @@ class Collection extends Arr
             $arr = Arr::fromArray([$value]);
         }
 
-        $this->items = $arr->merge($this->items)->asArray();
+        return static::fromArray($arr->merge($this->items)->asArray());
     }
 
     public function pull(ToString|string|int $key): mixed
@@ -601,13 +640,14 @@ class Collection extends Arr
         return $return;
     }
 
-    public function put(ToString|string|int $key, mixed $value): void
+    public function put(ToString|string|int $key, mixed $value): static
     {
         if($key instanceof ToString) {
             $key = $key->toString();
         }
 
         $this->items[$key] = $value;
+        return $this;
     }
 
     public function reduceSpread(Closure $closure): static
@@ -633,6 +673,9 @@ class Collection extends Arr
         $windows = static::create();
 
         for($i = 0; $i < $this->count(); $i += $step) {
+            if ($i + $windowSize > $this->count()) {
+                break;
+            }
             $windows[] = $this->slice($i, $windowSize);
         }
 
@@ -696,11 +739,39 @@ class Collection extends Arr
 
     public function sole(Closure|ToString|string|int $key, mixed $value = null): mixed
     {
-        // @todo
+        $filtered = null;
+        if ($key instanceof Closure) {
+            $filtered = $this->filter($key)->values();
+        } elseif ($key && $value) {
+            $filtered = $this->filter(function ($item, $index) use ($key, $value) {
+                if (!is_array($item) && !$item instanceof ToArray) {
+                    return false;
+                }
+
+                if (!isset($item[$key])) {
+                    return false;
+                }
+
+                return $item[$key] === $value;
+            })->values();
+        }
+
+        if (!$filtered) {
+            return false;
+        }
+
+        if ($filtered->count() === 1) {
+            return $filtered[0];
+        }
+
+        return false;
     }
 
-    public function sort(Closure $closure): bool
+    public function sort(Closure $closure = null): bool
     {
+        if (!$closure) {
+            return $this->sortAscending();
+        }
         return usort($this->items, $closure);
     }
 
@@ -746,7 +817,7 @@ class Collection extends Arr
             return static::create();
         }
 
-        $chunkLength = floor($this->count() / $chunks);
+        $chunkLength = ceil($this->count() / $chunks);
         return $this->chunk($chunkLength, $preserveKeys);
     }
 
@@ -774,7 +845,7 @@ class Collection extends Arr
                 continue;
             }
 
-            return $this->slice(0, $i + 1);
+            return $this->slice(0, $i);
         }
 
         return $this->collect();
@@ -799,7 +870,7 @@ class Collection extends Arr
                 continue;
             }
 
-            return $this->slice(0, $i + 1);
+            return $this->slice(0, $i);
         }
 
         return $this->collect();

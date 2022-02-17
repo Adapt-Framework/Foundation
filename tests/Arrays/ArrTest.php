@@ -370,6 +370,17 @@ class ArrTest extends TestCase
         $this->assertEquals($expected, Arr::fromArray($array1)->merge($array2, $array3)->toArray());
     }
 
+    public function testMergeRecursive(): void
+    {
+        $arr = Arr::fromArray(['product_id' => 1, 'price' => 100])
+            ->mergeRecursive(['product_id' => 2, 'price' => 200, 'discount' => false]);
+
+        $this->assertEquals(
+            ['product_id' => [1, 2], 'price' => [100, 200], 'discount' => false],
+            $arr->asArray()
+        );
+    }
+
     public function testPad(): void
     {
         $array = [1, 2, 3];

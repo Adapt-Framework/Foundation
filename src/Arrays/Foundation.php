@@ -8,7 +8,8 @@ use OutOfBoundsException;
 use SeekableIterator;
 use Serializable;
 
-abstract class Foundation implements ArrayAccess, Countable, SeekableIterator, Serializable, ToArray, FromArray, AsArray
+abstract class Foundation implements ArrayAccess, Countable, SeekableIterator, Serializable, ToArray, FromArray,
+    AsArray
 {
     protected array $items;
     protected mixed $index = 0;
@@ -84,25 +85,35 @@ abstract class Foundation implements ArrayAccess, Countable, SeekableIterator, S
         return isset($this->items[$this->index]);
     }
 
-    public function rewind()
+    public function rewind(): void
     {
         $this->index = 0;// OR = array_keys($this->items)[0]...
     }
 
     public function serialize(): string
     {
-        return serialize(['items' => $this->items, 'index' => $this->index]);
+        return serialize($this->__serialize());
+    }
+
+    public function __unserialize(array $data): void
+    {
+        if (isset($data['index'])) {
+            $this->index = $data['index'];
+        }
+        if (isset($data['items'])) {
+            $this->items = $data['items'];
+        }
     }
 
     public function unserialize(string $data): void
     {
         $values = unserialize($data);
-        if (isset($values['index'])) {
-            $this->index = $values['index'];
-        }
-        if (isset($values['items'])) {
-            $this->items = $values['items'];
-        }
+        $this->__unserialize($values);
+    }
+
+    public function __serialize(): array
+    {
+        return ['items' => $this->items, 'index' => $this->index];
     }
 
     public static function fromArray(ToArray|AsArray|array $array): static

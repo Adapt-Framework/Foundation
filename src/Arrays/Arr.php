@@ -267,6 +267,20 @@ class Arr extends Foundation
         return static::fromArray(array_merge($this->items, ...$arrays));
     }
 
+    public function mergeRecursive(AsArray|array ...$arrays): static
+    {
+        array_walk(
+            $arrays,
+            function(&$value, $key) {
+                if ($value instanceof AsArray) {
+                    $value = $value->asArray();
+                }
+            }
+        );
+
+        return static::fromArray(array_merge_recursive($this->items, ...$arrays));
+    }
+
     public function pad(int $length, mixed $value): static
     {
         return static::fromArray(array_pad($this->items, $length, $value));
@@ -384,7 +398,6 @@ class Arr extends Foundation
 
     public function values(): static
     {
-        print_r($this->items);
         return static::fromArray(array_values($this->items));
     }
 
