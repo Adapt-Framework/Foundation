@@ -490,7 +490,11 @@ class ArrTest extends TestCase
         $arr = Arr::fromArray($array);
         $replacements = [6, 7];
         $arr = $arr->splice(1, 2, $replacements);
-        print_r($arr->toArray());
+
+        $this->assertEquals(
+            [1, 6, 7, 4, 5],
+            $arr->toArray()
+        );
     }
 
     public function testSum(): void
@@ -552,7 +556,7 @@ class ArrTest extends TestCase
     {
         $array = [5, 4, 3, 2, 1];
         $arr = Arr::fromArray($array);
-        $arr->sortAscending();
+        $arr = $arr->sortAscending();
 
         $this->assertEquals(
             [1, 2, 3, 4, 5],
@@ -564,7 +568,7 @@ class ArrTest extends TestCase
     {
         $array = [1, 2, 3, 4, 5];
         $arr = Arr::fromArray($array);
-        $arr->sortDescending();
+        $arr = $arr->sortDescending();
 
         $this->assertEquals(
             [5, 4, 3, 2, 1],
@@ -614,7 +618,7 @@ class ArrTest extends TestCase
         $array = ["img12.png", "img10.png", "img2.png", "img1.png"];
         $arr = Arr::fromArray($array);
 
-        $arr->sortNaturally();
+        $arr = $arr->sortNaturally()->values();
         $this->assertEquals(
             ['img1.png', 'img2.png', 'img10.png', 'img12.png'],
             $arr->toArray()

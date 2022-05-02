@@ -76,4 +76,9 @@ class Path extends StringCollection implements ToString, FromString
     {
         return $this->implode(static::PATH_SEPARATOR)->toString();
     }
+
+    public function __toString(): string
+    {
+        return $this->toString();
+    }
 }

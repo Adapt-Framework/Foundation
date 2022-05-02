@@ -2,6 +2,7 @@
 
 namespace Adapt\Foundation\Streams;
 
+use Adapt\Foundation\Arrays\AsArray;
 use Adapt\Foundation\Arrays\ToArray;
 use Adapt\Foundation\Strings\Str;
 use Adapt\Foundation\Strings\StringCollection;
@@ -34,5 +35,10 @@ interface Stream
     ): int|false;
     public function write(ToString|string $data, int|null $length = null): int|false;
 
+    public function prependReadFilter(ToString|string $name, AsArray|array $options = []): mixed;
+    public function prependWriteFilter(ToString|string $name, AsArray|array $options = []): mixed;
+    public function appendReadFilter(ToString|string $name, AsArray|array $options = []): mixed;
+    public function appendWriteFilter(ToString|string $name, AsArray|array $options = []): mixed;
+    public function removeFilter(mixed $filter): bool;
 
 }

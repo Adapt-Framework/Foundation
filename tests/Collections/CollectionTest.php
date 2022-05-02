@@ -902,17 +902,49 @@ class CollectionTest extends TestCase
 
     public function testTap(): void
     {
-        // @todo Rethink if sort should return a new collection
+        $ascendingCollection = null;
+
+        $descendingCollection = Collection::fromArray([2, 4, 3, 1, 5])
+            ->sortAscending()
+            ->tap(function(Collection $collection) use (&$ascendingCollection) {
+                $ascendingCollection = $collection->collect();
+            })
+            ->sortDescending();
+
+        $this->assertInstanceOf(Collection::class, $ascendingCollection);
+        $this->assertEquals(
+            [1, 2, 3, 4, 5],
+            $ascendingCollection->asArray()
+        );
+        $this->assertEquals(
+            [5, 4, 3, 2, 1],
+            $descendingCollection->asArray()
+        );
     }
 
     public function testTimes(): void
     {
+        $collection = Collection::times(10, function ($number) {
+            return $number * 9;
+        });
 
+        $this->assertEquals(
+            [9, 18, 27, 36, 45, 54, 63, 72, 81, 90],
+            $collection->asArray()
+        );
     }
 
     public function testTransform(): void
     {
+        $collection = Collection::fromArray([1, 2, 3, 4, 5])
+            ->transform(function ($item, $key) {
+                return $item * 2;
+            });
 
+        $this->assertEquals(
+            [2, 4, 6, 8, 10],
+            $collection->asArray()
+        );
     }
 
     public function testUnion(): void

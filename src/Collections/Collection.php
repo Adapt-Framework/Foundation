@@ -431,7 +431,7 @@ class Collection extends Arr
     {
         $output = static::create();
         $this->each(function ($item, $key) use (&$output, $closure) {
-            $output = $output->merge($closure($item, $key));
+            $output[] = $closure($item, $key);
         });
         return $output;
     }
@@ -767,22 +767,26 @@ class Collection extends Arr
         return false;
     }
 
-    public function sort(Closure $closure = null): bool
+    public function sort(Closure $closure = null): static
     {
         if (!$closure) {
             return $this->sortAscending();
         }
-        return usort($this->items, $closure);
+        $items = $this->items;
+        usort($items, $closure);
+        return static::fromArray($items);
     }
 
-    public function sortByKeyAscending(ToString|string $key): bool
+    public function sortByKeyAscending(ToString|string $key): static
     {
+        $items = $this->items;
+
         if ($key instanceof ToString) {
             $key = $key->toString();
         }
 
-        return usort(
-            $this->items,
+        usort(
+            $items,
             function($a, $b) use($key) {
                 if ($a[$key] == $b[$key]) {
                     return 0;
@@ -791,16 +795,20 @@ class Collection extends Arr
                 return $a[$key] < $b[$key] ? -1 : 1;
             }
         );
+
+        return static::fromArray($items);
     }
 
-    public function sortByKeyDescending(ToString|string $key): bool
+    public function sortByKeyDescending(ToString|string $key): static
     {
+        $items = $this->items;
+
         if ($key instanceof ToString) {
             $key = $key->toString();
         }
 
-        return usort(
-            $this->items,
+        usort(
+            $items,
             function($a, $b) use($key) {
                 if ($a[$key] == $b[$key]) {
                     return 0;
@@ -809,6 +817,8 @@ class Collection extends Arr
                 return $a[$key] > $b[$key] ? -1 : 1;
             }
         );
+
+        return static::fromArray($items);
     }
 
     public function split(int $chunks, bool $preserveKeys = false): static

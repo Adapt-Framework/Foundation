@@ -4,11 +4,10 @@ namespace Adapt\Foundation\Arrays;
 
 use ArrayAccess;
 use Countable;
-use OutOfBoundsException;
-use SeekableIterator;
+use Iterator;
 use Serializable;
 
-abstract class Foundation implements ArrayAccess, Countable, SeekableIterator, Serializable, ToArray, FromArray,
+abstract class Foundation implements ArrayAccess, Countable, Iterator, Serializable, ToArray, FromArray,
     AsArray
 {
     protected array $items;
@@ -56,38 +55,29 @@ abstract class Foundation implements ArrayAccess, Countable, SeekableIterator, S
         return count($this->items);
     }
 
-    public function seek(int $offset): void
-    {
-        if (!isset($this->items[$offset])) {
-            throw new OutOfBoundsException(sprintf('Invalid index: %s', $offset));
-        }
-
-        $this->index = $offset;
-    }
-
     public function current(): mixed
     {
-        return $this->items[$this->index];
+        return current($this->items);
     }
 
     public function next(): void
     {
-        ++$this->index;
+        next($this->items);
     }
 
-    public function key(): mixed
+    public function key(): string|int|null
     {
-        return $this->index;
+        return key($this->items);
     }
 
     public function valid(): bool
     {
-        return isset($this->items[$this->index]);
+        return key($this->items) !== null;
     }
 
     public function rewind(): void
     {
-        $this->index = 0;// OR = array_keys($this->items)[0]...
+        reset($this->items);
     }
 
     public function serialize(): string

@@ -134,7 +134,7 @@ class Str implements ToString, FromString
     public function sprintf(mixed ...$values): static
     {
         $values = array_map(
-            function($value) {
+            function ($value) {
                 if ($value instanceof ToString) {
                     $value = $value->toString();
                 }
@@ -198,8 +198,8 @@ class Str implements ToString, FromString
     public function replace(
         ToString|string $search,
         ToString|string $replace,
-        bool $caseSensitive = true,
-        int &$count = null
+        bool            $caseSensitive = true,
+        int             &$count = null
     ): static
     {
         if ($search instanceof ToString) {
@@ -288,8 +288,8 @@ class Str implements ToString, FromString
 
     public function findFirst(
         ToString|string $needle,
-        bool $beforeNeedle = false,
-        bool $caseSensitive = true
+        bool            $beforeNeedle = false,
+        bool            $caseSensitive = true
     ): static|false
     {
         if ($needle instanceof ToString) {
@@ -376,6 +376,16 @@ class Str implements ToString, FromString
             $break = $break->toString();
         }
         return static::fromString(wordwrap($this->string, $width, $break, $cutLongWords));
+    }
+
+    public function escape(): Str
+    {
+        return static::fromString(addslashes($this->string));
+    }
+
+    public function unescape(): Str
+    {
+        return static::fromString(stripslashes($this->string));
     }
 
     public function __toString(): string

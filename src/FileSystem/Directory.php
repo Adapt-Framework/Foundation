@@ -15,7 +15,7 @@ class Directory extends Collection implements FromString
 
     public function __construct(Path|ToArray|AsArray|array|ToString|string $path)
     {
-        if ($path instanceof ToArray || $path instanceof  AsArray || is_array($path)) {
+        if ($path instanceof ToArray || $path instanceof AsArray || is_array($path)) {
             $path = Path::fromArray($path);
         }
 

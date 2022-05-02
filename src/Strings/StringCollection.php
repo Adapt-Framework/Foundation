@@ -6,7 +6,7 @@ use Adapt\Foundation\Arrays\AsArray;
 use Adapt\Foundation\Arrays\ToArray;
 use Adapt\Foundation\Collections\Collection;
 
-class StringCollection extends Collection
+class StringCollection extends Collection implements ToString
 {
     public function __construct(ToArray|AsArray|array $array = [])
     {
@@ -34,5 +34,15 @@ class StringCollection extends Collection
             $value = Str::fromString($value);
         }
         parent::offsetSet($offset, $value);
+    }
+
+    public function toString(): string
+    {
+        return $this->implode('')->toString();
+    }
+
+    public function __toString(): string
+    {
+        return $this->toString();
     }
 }

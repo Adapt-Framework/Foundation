@@ -378,7 +378,8 @@ class Arr extends Foundation
 
     public function splice(int $offset, ?int $length, mixed $replacement = []): static
     {
-        return static::fromArray(array_splice($this->items, $offset, $length, $replacement));
+        array_splice($this->items, $offset, $length, $replacement);
+        return static::fromArray($this->items);
     }
 
     public function sum(): float|int
@@ -406,22 +407,29 @@ class Arr extends Foundation
         return array_walk($this->items, $closure, $arg);
     }
 
-    public function sortAscending(bool $preserveKeys = false, int $flags = SORT_REGULAR): bool
+    public function sortAscending(bool $preserveKeys = false, int $flags = SORT_REGULAR): static
     {
+        $items = $this->items;
+
         if ($preserveKeys) {
-            return asort($this->items, $flags);
+            asort($items, $flags);
+        } else {
+            sort($items, $flags);
         }
 
-        return sort($this->items, $flags);
+        return static::fromArray($items);
     }
 
-    public function sortDescending(bool $preserveKeys = false, int $flags = SORT_REGULAR): bool
+    public function sortDescending(bool $preserveKeys = false, int $flags = SORT_REGULAR): static
     {
+        $items = $this->items;
         if ($preserveKeys) {
-            return arsort($this->items, $flags);
+            arsort($items, $flags);
+        } else {
+            rsort($items, $flags);
         }
 
-        return rsort($this->items, $flags);
+        return static::fromArray($items);
     }
 
     public function in(mixed $value): bool
@@ -429,23 +437,30 @@ class Arr extends Foundation
         return in_array($value, $this->items);
     }
 
-    public function sortKeysAscending(int $flags = SORT_REGULAR): bool
+    public function sortKeysAscending(int $flags = SORT_REGULAR): static
     {
-        return ksort($this->items, $flags);
+        $items = $this->items;
+        ksort($items, $flags);
+        return static::fromArray($items);
     }
 
-    public function sortKeysDescending(int $flags = SORT_REGULAR): bool
+    public function sortKeysDescending(int $flags = SORT_REGULAR): static
     {
-        return krsort($this->items, $flags);
+        $items = $this->items;
+        krsort($items, $flags);
+        return static::fromArray($items);
     }
 
-    public function sortNaturally(bool $caseSensitive = false): bool
+    public function sortNaturally(bool $caseSensitive = false): static
     {
+        $items = $this->items;
         if ($caseSensitive) {
-            return natcasesort($this->items);
+            natcasesort($items);
+        } else {
+            natsort($items);
         }
 
-        return natsort($this->items);
+        return static::fromArray($items);
     }
 
     public static function range(string|int|float $start, string|int|float $end, int|float $step = 1): static

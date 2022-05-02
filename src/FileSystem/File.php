@@ -2,6 +2,7 @@
 
 namespace Adapt\Foundation\FileSystem;
 
+use Adapt\Foundation\Arrays\AsArray;
 use Adapt\Foundation\Arrays\ToArray;
 use Adapt\Foundation\Collections\Collection;
 use Adapt\Foundation\Streams\FileStream;
@@ -430,5 +431,50 @@ class File implements FileStream
         }
 
         return static::openForAppending($file);
+    }
+
+    public function prependReadFilter(ToString|string $name, AsArray|array $options = []): mixed
+    {
+        $handle = $this->getHandle();
+        if (!$handle) {
+            return false;
+        }
+
+        return stream_filter_prepend($handle, $name, STREAM_FILTER_READ, $options);
+    }
+
+    public function prependWriteFilter(ToString|string $name, AsArray|array $options = []): mixed
+    {
+        $handle = $this->getHandle();
+        if (!$handle) {
+            return false;
+        }
+
+        return stream_filter_prepend($handle, $name, STREAM_FILTER_WRITE, $options);
+    }
+
+    public function appendReadFilter(ToString|string $name, AsArray|array $options = []): mixed
+    {
+        $handle = $this->getHandle();
+        if (!$handle) {
+            return false;
+        }
+
+        return stream_filter_append($handle, $name, STREAM_FILTER_READ, $options);
+    }
+
+    public function appendWriteFilter(ToString|string $name, AsArray|array $options = []): mixed
+    {
+        $handle = $this->getHandle();
+        if (!$handle) {
+            return false;
+        }
+
+        return stream_filter_append($handle, $name, STREAM_FILTER_WRITE, $options);
+    }
+
+    public function removeFilter(mixed $filter): bool
+    {
+        return stream_filter_remove($filter);
     }
 }

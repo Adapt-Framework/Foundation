@@ -1,0 +1,32 @@
+name: 'Run Tests'
+
+on:
+  push:
+    branches:
+      - '**'
+    tags-ignore:
+      - '**'
+  workflow_dispatch:
+
+permissions:
+  id-token: write
+  contents: read
+
+env:
+  PHP_VERSION: 8.0
+
+jobs:
+  build:
+    name: "Test"
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Install dependencies
+        uses: php-actions/composer@v6
+
+      - name: Run tests
+        run: php vendor/bin/phpunit tests
+
