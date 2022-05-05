@@ -6,12 +6,6 @@ on:
       - '**'
     tags-ignore:
       - '**'
-  workflow_dispatch:
-
-permissions:
-  id-token: write
-  contents: read
-
 env:
   PHP_VERSION: 8.0
 

@@ -3,11 +3,11 @@
 namespace Adapt\Foundation\FileSystem;
 
 
-use Adapt\Foundation\Arrays\AsArray;
-use Adapt\Foundation\Arrays\ToArray;
+use Adapt\Foundation\Arrays\Contracts\AsArray;
+use Adapt\Foundation\Arrays\Contracts\ToArray;
 use Adapt\Foundation\Collections\Collection;
-use Adapt\Foundation\Strings\FromString;
-use Adapt\Foundation\Strings\ToString;
+use Adapt\Foundation\Strings\Contracts\FromString;
+use Adapt\Foundation\Strings\Contracts\ToString;
 
 class Directory extends Collection implements FromString
 {

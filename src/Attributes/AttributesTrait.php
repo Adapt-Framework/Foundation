@@ -2,13 +2,12 @@
 
 namespace Adapt\Foundation\Attributes;
 
-use Adapt\Foundation\Arrays\ToArray;
-use Adapt\Foundation\Collections\Collection;
+use Adapt\Foundation\Arrays\Contracts\ToArray;
 use Adapt\Foundation\Dates\Date;
 use Adapt\Foundation\Dates\DateTime;
 use Adapt\Foundation\Dates\Time;
+use Adapt\Foundation\Strings\Contracts\ToString;
 use Adapt\Foundation\Strings\Str;
-use Adapt\Foundation\Strings\ToString;
 
 trait AttributesTrait
 {
@@ -38,7 +37,7 @@ trait AttributesTrait
                 }
             }
 
-            if ($guarded) {
+            if ($guarded && count($guarded)) {
                 if (in_array($key, $guarded)) {
                     continue;
                 }

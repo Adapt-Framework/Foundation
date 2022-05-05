@@ -2,12 +2,12 @@
 
 namespace Adapt\Foundation\FileSystem;
 
-use Adapt\Foundation\Arrays\AsArray;
-use Adapt\Foundation\Arrays\ToArray;
-use Adapt\Foundation\Strings\FromString;
+use Adapt\Foundation\Arrays\Contracts\AsArray;
+use Adapt\Foundation\Arrays\Contracts\ToArray;
+use Adapt\Foundation\Strings\Contracts\FromString;
+use Adapt\Foundation\Strings\Contracts\ToString;
 use Adapt\Foundation\Strings\Str;
 use Adapt\Foundation\Strings\StringCollection;
-use Adapt\Foundation\Strings\ToString;
 
 class Path extends StringCollection implements ToString, FromString
 {

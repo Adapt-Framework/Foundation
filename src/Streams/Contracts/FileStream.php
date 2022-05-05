@@ -1,11 +1,11 @@
 <?php
 
-namespace Adapt\Foundation\Streams;
+namespace Adapt\Foundation\Streams\Contracts;
 
 use Adapt\Foundation\Collections\Collection;
 use Adapt\Foundation\FileSystem\FileMode;
 use Adapt\Foundation\FileSystem\Path;
-use Adapt\Foundation\Strings\ToString;
+use Adapt\Foundation\Strings\Contracts\ToString;
 
 interface FileStream extends Stream
 {

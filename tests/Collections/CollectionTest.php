@@ -3,6 +3,8 @@
 namespace Tests\Adapt\Foundation\Collections;
 
 use Adapt\Foundation\Collections\Collection;
+use Adapt\Foundation\Dates\DateTime;
+use Adapt\Foundation\Strings\Str;
 use PHPUnit\Framework\TestCase;
 use Tests\Adapt\Foundation\Collections\TestClasses\Currency;
 use Tests\Adapt\Foundation\Collections\TestClasses\ResourceClass;
@@ -252,6 +254,16 @@ class CollectionTest extends TestCase
 
     public function testFlatten(): void
     {
+        $this->assertEquals(
+            ['matt', 'php', 'javascript'],
+            Collection::fromArray([
+                'name' => 'matt',
+                'languages' => [
+                    'php', 'javascript'
+                ]
+            ])->flatten()->toArray()
+        );
+
         $this->assertEquals(
             [
                 ['name' => 'iPhone 6S', 'brand' => 'Apple'],
@@ -692,10 +704,10 @@ class CollectionTest extends TestCase
         );
     }
 
-    public function testReduceSpread(): void
-    {
-        // @todo Check how this is meant to work
-    }
+//    public function testReduceSpread(): void
+//    {
+//        // @todo Check how this is meant to work
+//    }
 
     public function testReject(): void
     {
@@ -803,14 +815,13 @@ class CollectionTest extends TestCase
     public function testSort(): void
     {
         $collection = Collection::fromArray([10, 9, 8, 7, 6, 5, 4, 3, 2, 1]);
-        $collection->sort();
         $this->assertEquals(
             [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
-            $collection->asArray()
+            $collection->sort()->asArray()
         );
 
         $collection = Collection::fromArray([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
-        $collection->sort(function ($a, $b) {
+        $collection = $collection->sort(function ($a, $b) {
             if ($a === $b) {
                 return 0;
             }
@@ -832,7 +843,7 @@ class CollectionTest extends TestCase
             ['name' => 'Bookcase', 'price' => 150],
         ]);
 
-        $collection->sortByKeyAscending('price');
+        $collection = $collection->sortByKeyAscending('price');
         $this->assertEquals([
             ['name' => 'Chair', 'price' => 100],
             ['name' => 'Bookcase', 'price' => 150],
@@ -937,7 +948,7 @@ class CollectionTest extends TestCase
     public function testTransform(): void
     {
         $collection = Collection::fromArray([1, 2, 3, 4, 5])
-            ->transform(function ($item, $key) {
+            ->transform(function ($item) {
                 return $item * 2;
             });
 
@@ -947,64 +958,250 @@ class CollectionTest extends TestCase
         );
     }
 
-    public function testUnion(): void
-    {
-
-    }
+//    public function testUnion(): void
+//    {
+//        $collection = Collection::fromArray([1 => ['a'], 2 => ['b']]);
+//        $collection = $collection->union([3 => ['c'], 1 => ['d']]);
+//        $this->assertEquals(
+//            [1 => ['a'], 2 => ['b'], 3 => ['c']],
+//            $collection->toArray()
+//        );
+//    }
 
     public function testWhen(): void
     {
+        $collection = Collection::fromArray([1, 2, 3]);
 
+        $collection->when(true, function ($collection, $value) {
+            $collection->push(4);
+            return $collection;
+        });
+
+        $this->assertCount(4, $collection);
+        $this->assertEquals(4, $collection[3]);
+
+        $collection->when(false, function ($collection, $value) {
+            $collection->push(5);
+            return $collection;
+        });
+
+        $this->assertCount(4, $collection);
     }
 
     public function testWhenEmpty(): void
     {
+        $collection = Collection::create();
+        $collection->whenEmpty(function (Collection $collection) {
+            $collection->push('Was empty');
+            return $collection;
+        });
 
+        $this->assertCount(1, $collection);
+
+        $collection->whenEmpty(function (Collection $collection) {
+            $collection->push('Was empty');
+            return $collection;
+        });
+
+        $this->assertCount(1, $collection);
     }
 
     public function testWhenNotEmpty(): void
     {
+        $collection = Collection::create();
+        $collection->whenNotEmpty(function (Collection $collection) {
+            $collection->push('Was empty');
+            return $collection;
+        });
 
+        $this->assertCount(0, $collection);
+        $collection->push('Hello');
+
+        $collection->whenNotEmpty(function (Collection $collection) {
+            $collection->push('Was empty');
+            return $collection;
+        });
+
+        $this->assertCount(2, $collection);
     }
 
     public function testWhere(): void
     {
+        $collection = Collection::fromArray([
+            ['product' => 'Desk', 'price' => 200],
+            ['product' => 'Chair', 'price' => 100],
+            ['product' => 'Bookcase', 'price' => 150],
+            ['product' => 'Door', 'price' => 100],
+        ]);
 
+        $filtered = $collection->where('price', 100);
+        $this->assertEquals([
+            ['product' => 'Chair', 'price' => 100],
+            ['product' => 'Door', 'price' => 100],
+        ], $filtered->toArray());
+
+        $filtered = $collection->where('price', '==', '100');
+        $this->assertEquals([
+            ['product' => 'Chair', 'price' => 100],
+            ['product' => 'Door', 'price' => 100],
+        ], $filtered->toArray());
+
+        $filtered = $collection->where('price', '===', 100);
+        $this->assertEquals([
+            ['product' => 'Chair', 'price' => 100],
+            ['product' => 'Door', 'price' => 100],
+        ], $filtered->toArray());
+
+        $filtered = $collection->where('price', '===', '100');
+        $this->assertEquals([], $filtered->toArray());
+
+        $filtered = $collection->where('price', '<=', 150);
+        $this->assertEquals([
+            ['product' => 'Chair', 'price' => 100],
+            ['product' => 'Bookcase', 'price' => 150],
+            ['product' => 'Door', 'price' => 100],
+        ], $filtered->toArray());
+
+        $filtered = $collection->where('price', '<', 150);
+        $this->assertEquals([
+            ['product' => 'Chair', 'price' => 100],
+            ['product' => 'Door', 'price' => 100],
+        ], $filtered->toArray());
+
+        $filtered = $collection->where('price', '>=', 150);
+        $this->assertEquals([
+            ['product' => 'Desk', 'price' => 200],
+            ['product' => 'Bookcase', 'price' => 150],
+        ], $filtered->toArray());
+
+        $filtered = $collection->where('price', '>', 150);
+        $this->assertEquals([
+            ['product' => 'Desk', 'price' => 200],
+        ], $filtered->toArray());
+
+        $filtered = $collection->where('price', '!=', 150);
+        $this->assertEquals([
+            ['product' => 'Desk', 'price' => 200],
+            ['product' => 'Chair', 'price' => 100],
+            ['product' => 'Door', 'price' => 100],
+        ], $filtered->toArray());
     }
 
     public function testWhereBetween(): void
     {
+        $collection = Collection::fromArray([
+            ['product' => 'Desk', 'price' => 200],
+            ['product' => 'Chair', 'price' => 80],
+            ['product' => 'Bookcase', 'price' => 150],
+            ['product' => 'Pencil', 'price' => 30],
+            ['product' => 'Door', 'price' => 100],
+        ]);
 
+        $filtered = $collection->whereBetween('price', 100, 200);
+        $this->assertEquals([
+            ['product' => 'Desk', 'price' => 200],
+            ['product' => 'Bookcase', 'price' => 150],
+            ['product' => 'Door', 'price' => 100],
+        ], $filtered->toArray());
     }
 
     public function testWhereIn(): void
     {
+        $collection = Collection::fromArray([
+            ['product' => 'Desk', 'price' => 200],
+            ['product' => 'Chair', 'price' => 80],
+            ['product' => 'Bookcase', 'price' => 150],
+            ['product' => 'Pencil', 'price' => 30],
+            ['product' => 'Door', 'price' => 100],
+        ]);
 
+        $filtered = $collection->whereIn('price', [80, 30]);
+        $this->assertEquals([
+            ['product' => 'Chair', 'price' => 80],
+            ['product' => 'Pencil', 'price' => 30],
+        ], $filtered->toArray());
     }
 
     public function testWhereInstanceOf(): void
     {
+        $collection = Collection::fromArray([
+            Str::fromString('Hello'),
+            DateTime::now(),
+            Str::fromString('World')
+        ]);
 
+        $filtered = $collection->whereInstanceOf(Str::class);
+        $this->assertCount(2, $filtered);
     }
 
     public function testWhereNotBetween(): void
     {
+        $collection = Collection::fromArray([
+            ['product' => 'Desk', 'price' => 200],
+            ['product' => 'Chair', 'price' => 80],
+            ['product' => 'Bookcase', 'price' => 150],
+            ['product' => 'Pencil', 'price' => 30],
+            ['product' => 'Door', 'price' => 100],
+        ]);
 
+        $filtered = $collection->whereNotBetween('price', 100, 200);
+        $this->assertEquals([
+            ['product' => 'Chair', 'price' => 80],
+            ['product' => 'Pencil', 'price' => 30],
+        ], $filtered->toArray());
     }
 
     public function testWhereNotIn(): void
     {
+        $collection = Collection::fromArray([
+            ['product' => 'Desk', 'price' => 200],
+            ['product' => 'Chair', 'price' => 80],
+            ['product' => 'Bookcase', 'price' => 150],
+            ['product' => 'Pencil', 'price' => 30],
+            ['product' => 'Door', 'price' => 100],
+        ]);
 
+        $filtered = $collection->whereNotIn('price', [80, 30]);
+        $this->assertEquals([
+            ['product' => 'Desk', 'price' => 200],
+            ['product' => 'Bookcase', 'price' => 150],
+            ['product' => 'Door', 'price' => 100],
+        ], $filtered->toArray());
     }
 
     public function testWhereNotNull(): void
     {
+        $collection = Collection::fromArray([
+            ['product' => 'Desk', 'price' => 200],
+            ['product' => 'Chair', 'price' => 80],
+            ['product' => 'Bookcase', 'price' => 150],
+            ['product' => 'Pencil', 'price' => null],
+            ['product' => 'Door', 'price' => null],
+        ]);
 
+        $filtered = $collection->whereNotNUll('price');
+        $this->assertEquals([
+            ['product' => 'Desk', 'price' => 200],
+            ['product' => 'Chair', 'price' => 80],
+            ['product' => 'Bookcase', 'price' => 150],
+        ], $filtered->toArray());
     }
 
     public function testWhereNull(): void
     {
+        $collection = Collection::fromArray([
+            ['product' => 'Desk', 'price' => 200],
+            ['product' => 'Chair', 'price' => 80],
+            ['product' => 'Bookcase', 'price' => 150],
+            ['product' => 'Pencil', 'price' => null],
+            ['product' => 'Door', 'price' => null],
+        ]);
 
+        $filtered = $collection->whereNull('price');
+        $this->assertEquals([
+            ['product' => 'Pencil', 'price' => null],
+            ['product' => 'Door', 'price' => null],
+        ], $filtered->toArray());
     }
 }
 

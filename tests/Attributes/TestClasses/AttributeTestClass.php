@@ -34,6 +34,6 @@ class AttributeTestClass
 
     public function getChanges(): array
     {
-        $this->getChanges();
+        return $this->changes;
     }
 }

@@ -2,6 +2,9 @@
 
 namespace Adapt\Foundation\Arrays;
 
+use Adapt\Foundation\Arrays\Contracts\AsArray;
+use Adapt\Foundation\Arrays\Contracts\FromArray;
+use Adapt\Foundation\Arrays\Contracts\ToArray;
 use ArrayAccess;
 use Countable;
 use Iterator;

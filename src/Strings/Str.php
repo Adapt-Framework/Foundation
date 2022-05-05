@@ -3,6 +3,9 @@
 namespace Adapt\Foundation\Strings;
 
 
+use Adapt\Foundation\Strings\Contracts\FromString;
+use Adapt\Foundation\Strings\Contracts\ToString;
+
 class Str implements ToString, FromString
 {
     protected string $string;

@@ -2,9 +2,10 @@
 
 namespace Adapt\Foundation\Dates;
 
-use Adapt\Foundation\Strings\FromString;
+use DateTime as NativeDateTime;
+use Adapt\Foundation\Strings\Contracts\FromString;
+use Adapt\Foundation\Strings\Contracts\ToString;
 use Adapt\Foundation\Strings\Str;
-use Adapt\Foundation\Strings\ToString;
 
 /**
  * @property int $year
@@ -35,11 +36,26 @@ use Adapt\Foundation\Strings\ToString;
  * @property-read bool $isSaturday
  * @property-read bool $isSunday
  */
-class DateTime extends \DateTime implements ToString, FromString
+class DateTime extends NativeDateTime implements ToString, FromString
 {
     public const FORMAT_DATE = 'Y-m-d';
     public const FORMAT_TIME = 'H:i:s';
     public const FORMAT_DATETIME = 'Y-m-d H:i:s';
+
+    public const FORMAT_ATOM = self::ATOM;
+    public const FORMAT_ISO_8601_DATE = self::FORMAT_DATE;
+    public const FORMAT_ISO_8601_DATETIME = self::ATOM;
+    public const FORMAT_RFC_822_DATETIME = self::RFC822;
+    public const FORMAT_RFC_850_DATETIME = self::RFC850;
+    public const FORMAT_RFC_1036_DATETIME = self::RFC1036;
+    public const FORMAT_RFC_1123_DATETIME = self::RFC1123;
+    public const FORMAT_RFC_2822_DATETIME = self::RFC2822;
+    public const FORMAT_RFC_3339_DATETIME = self::RFC3339;
+    public const FORMAT_RFC_7231_DATETIME = self::RFC7231;
+    public const FORMAT_RSS_DATETIME = self::RSS;
+    public const FORMAT_W3C_DATETIME = self::W3C;
+
+
 
     public const SUNDAY = 0;
     public const MONDAY = 1;
@@ -48,6 +64,19 @@ class DateTime extends \DateTime implements ToString, FromString
     public const THURSDAY = 4;
     public const FRIDAY = 5;
     public const SATURDAY = 6;
+
+    public const JANUARY = 1;
+    public const FEBRUARY = 2;
+    public const MARCH = 3;
+    public const APRIL = 4;
+    public const MAY = 5;
+    public const JUNE = 6;
+    public const JULY = 7;
+    public const AUGUST = 8;
+    public const SEPTEMBER = 9;
+    public const OCTOBER = 10;
+    public const NOVEMBER = 11;
+    public const DECEMBER = 12;
 
     public string $defaultFormat = self::FORMAT_DATETIME;
 
@@ -257,9 +286,9 @@ class DateTime extends \DateTime implements ToString, FromString
     public function getDaysInMonth(): int
     {
         return match($this->month) {
-            1, 3, 5, 7, 8, 10, 12 => 31,
-            2 => $this->isLeapYear ? 29 : 28,
-            4, 6, 9, 11 => 30
+            self::JANUARY, self::MARCH, self::MAY, self::JULY, self::AUGUST, self::OCTOBER, self::DECEMBER => 31,
+            self::FEBRUARY => $this->isLeapYear ? 29 : 28,
+            self::APRIL, self::JUNE, self::SEPTEMBER, self::NOVEMBER => 30
         };
     }
 
@@ -496,6 +525,61 @@ class DateTime extends \DateTime implements ToString, FromString
     public function toString(): string
     {
         return $this->format($this->defaultFormat);
+    }
+
+    public function toIso8601String(): string
+    {
+        return $this->format(self::FORMAT_ISO_8601_DATETIME);
+    }
+
+    public function toRfc822String(): string
+    {
+        return $this->format(self::FORMAT_RFC_822_DATETIME);
+    }
+
+    public function toRfc850String(): string
+    {
+        return $this->format(self::FORMAT_RFC_850_DATETIME);
+    }
+
+    public function toRfc1036String(): string
+    {
+        return $this->format(self::FORMAT_RFC_1036_DATETIME);
+    }
+
+    public function toRfc1123String(): string
+    {
+        return $this->format(self::FORMAT_RFC_1123_DATETIME);
+    }
+
+    public function toRfc2822String(): string
+    {
+        return $this->format(self::FORMAT_RFC_2822_DATETIME);
+    }
+
+    public function toRfc3339String(): string
+    {
+        return $this->format(self::FORMAT_RFC_3339_DATETIME);
+    }
+
+    public function toRfc7231String(): string
+    {
+        return $this->format(self::FORMAT_RFC_7231_DATETIME);
+    }
+
+    public function toRssString(): string
+    {
+        return $this->format(self::FORMAT_RSS_DATETIME);
+    }
+
+    public function toW3cString(): string
+    {
+        return $this->format(self::FORMAT_W3C_DATETIME);
+    }
+
+    public function toAtomString(): string
+    {
+        return $this->format(self::FORMAT_ATOM);
     }
 
     public function fromTimestamp(int $timestamp): static

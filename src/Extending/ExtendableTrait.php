@@ -2,7 +2,7 @@
 
 namespace Adapt\Foundation\Extending;
 
-use Adapt\Foundation\Strings\ToString;
+use Adapt\Foundation\Strings\Contracts\ToString;
 use Closure;
 
 trait ExtendableTrait

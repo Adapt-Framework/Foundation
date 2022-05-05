@@ -2,7 +2,7 @@
     "name": "adapt/foundation",
     "description": "Foundation classes used for building complex products and services.",
     "minimum-stability": "stable",
-    "license": "proprietary",
+    "license": "mit",
     "authors": [
         {
             "name": "Matt Bruton",

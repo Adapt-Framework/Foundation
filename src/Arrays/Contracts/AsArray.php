@@ -1,6 +1,6 @@
 <?php
 
-namespace Adapt\Foundation\Arrays;
+namespace Adapt\Foundation\Arrays\Contracts;
 
 interface AsArray
 {

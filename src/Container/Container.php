@@ -2,7 +2,7 @@
 
 namespace Adapt\Foundation\Container;
 
-use Adapt\Foundation\Arrays\AsArray;
+use Adapt\Foundation\Arrays\Contracts\AsArray;
 use Adapt\Foundation\Collections\Collection;
 use ArrayAccess;
 use Closure;

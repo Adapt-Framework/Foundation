@@ -1,6 +1,6 @@
 <?php
 
-namespace Adapt\Foundation\Strings;
+namespace Adapt\Foundation\Strings\Contracts;
 
 interface FromString
 {

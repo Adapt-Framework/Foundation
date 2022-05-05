@@ -2,8 +2,8 @@
 
 namespace Adapt\Foundation\Container;
 
-use Adapt\Foundation\Arrays\AsArray;
-use Adapt\Foundation\Strings\ToString;
+use Adapt\Foundation\Arrays\Contracts\AsArray;
+use Adapt\Foundation\Strings\Contracts\ToString;
 use Closure;
 
 class ContextualBinding

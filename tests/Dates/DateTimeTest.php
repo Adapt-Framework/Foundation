@@ -31,5 +31,111 @@ class DateTimeTest extends TestCase
         $this->assertTrue($dt->isWeekend);
         $this->assertFalse($dt->isWeekday);
         $this->assertEquals(DateTime::SATURDAY, $dt->dayOfWeek);
+        $this->assertFalse($dt->isInTheFuture);
+        $this->assertTrue($dt->isInThePast);
+        $this->assertFalse($dt->isToday);
+        $this->assertFalse($dt->isTomorrow);
+        $this->assertFalse($dt->isYesterday);
+        $this->assertFalse($dt->isMorning);
+        $this->assertTrue($dt->isAfternoon);
+        $this->assertFalse($dt->isLeapYear);
     }
+
+    public function testSetters(): void
+    {
+        $dt = DateTime::fromString('2022-04-30 20:17:18');
+        $dt->year = 1980;
+        $dt->month = DateTime::JUNE;
+        $dt->day = 14;
+        $dt->hour = 21;
+        $dt->minute = 6;
+        $dt->second = 0;
+        $dt->microsecond = 123456;
+
+        $this->assertEquals('1980-06-14 21:06:00.123456', $dt->format('Y-m-d H:i:s.u'));
+    }
+
+    public function testDaysOfWeek(): void
+    {
+        $dt = DateTime::fromString('2022-05-01');
+
+        $this->assertTrue($dt->isSunday);
+        $this->assertFalse($dt->isMonday);
+        $this->assertFalse($dt->isTuesday);
+        $this->assertFalse($dt->isWednesday);
+        $this->assertFalse($dt->isThursday);
+        $this->assertFalse($dt->isFriday);
+        $this->assertFalse($dt->isSaturday);
+
+        $dt->goToTomorrow();
+        $this->assertFalse($dt->isSunday);
+        $this->assertTrue($dt->isMonday);
+        $this->assertFalse($dt->isTuesday);
+        $this->assertFalse($dt->isWednesday);
+        $this->assertFalse($dt->isThursday);
+        $this->assertFalse($dt->isFriday);
+        $this->assertFalse($dt->isSaturday);
+
+        $dt->goToTomorrow();
+        $this->assertFalse($dt->isSunday);
+        $this->assertFalse($dt->isMonday);
+        $this->assertTrue($dt->isTuesday);
+        $this->assertFalse($dt->isWednesday);
+        $this->assertFalse($dt->isThursday);
+        $this->assertFalse($dt->isFriday);
+        $this->assertFalse($dt->isSaturday);
+
+        $dt->goToTomorrow();
+        $this->assertFalse($dt->isSunday);
+        $this->assertFalse($dt->isMonday);
+        $this->assertFalse($dt->isTuesday);
+        $this->assertTrue($dt->isWednesday);
+        $this->assertFalse($dt->isThursday);
+        $this->assertFalse($dt->isFriday);
+        $this->assertFalse($dt->isSaturday);
+
+        $dt->goToTomorrow();
+        $this->assertFalse($dt->isSunday);
+        $this->assertFalse($dt->isMonday);
+        $this->assertFalse($dt->isTuesday);
+        $this->assertFalse($dt->isWednesday);
+        $this->assertTrue($dt->isThursday);
+        $this->assertFalse($dt->isFriday);
+        $this->assertFalse($dt->isSaturday);
+
+        $dt->goToTomorrow();
+        $this->assertFalse($dt->isSunday);
+        $this->assertFalse($dt->isMonday);
+        $this->assertFalse($dt->isTuesday);
+        $this->assertFalse($dt->isWednesday);
+        $this->assertFalse($dt->isThursday);
+        $this->assertTrue($dt->isFriday);
+        $this->assertFalse($dt->isSaturday);
+
+        $dt->goToTomorrow();
+        $this->assertFalse($dt->isSunday);
+        $this->assertFalse($dt->isMonday);
+        $this->assertFalse($dt->isTuesday);
+        $this->assertFalse($dt->isWednesday);
+        $this->assertFalse($dt->isThursday);
+        $this->assertFalse($dt->isFriday);
+        $this->assertTrue($dt->isSaturday);
+    }
+
+    public function testTimeOfDay(): void
+    {
+
+    }
+
+    public function testDaysInMonth(): void
+    {
+
+    }
+
+    public function testLeapYears(): void
+    {
+
+    }
+
+
 }

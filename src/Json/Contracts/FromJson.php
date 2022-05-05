@@ -1,6 +1,8 @@
 <?php
 
-namespace Adapt\Foundation\Json;
+namespace Adapt\Foundation\Json\Contracts;
+
+use Adapt\Foundation\Json\Json;
 
 interface FromJson
 {

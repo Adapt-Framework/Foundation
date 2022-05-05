@@ -2,11 +2,9 @@
 
 namespace Adapt\Foundation\Arrays;
 
+use Adapt\Foundation\Arrays\Contracts\AsArray;
+use Adapt\Foundation\Arrays\Contracts\ToArray;
 use Adapt\Foundation\FileSystem\Path;
-use Adapt\Foundation\Strings\FromString;
-use Adapt\Foundation\Strings\Str;
-use Adapt\Foundation\Strings\StringCollection;
-use Adapt\Foundation\Strings\ToString;
 
 class ArrayPath extends Path
 {

@@ -3,7 +3,7 @@
 namespace Adapt\Foundation\Extending;
 
 use Adapt\Foundation\Singleton\SingletonTrait;
-use Adapt\Foundation\Strings\ToString;
+use Adapt\Foundation\Strings\Contracts\ToString;
 use Closure;
 
 class ExtensionManager

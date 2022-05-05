@@ -2,8 +2,9 @@
 
 namespace Adapt\Foundation\Arrays;
 
+use Adapt\Foundation\Arrays\Contracts\AsArray;
 use Adapt\Foundation\Extending\ExtendableTrait;
-use Adapt\Foundation\Strings\ToString;
+use Adapt\Foundation\Strings\Contracts\ToString;
 use Closure;
 
 class Arr extends Foundation
@@ -17,6 +18,13 @@ class Arr extends Foundation
 
     public function isAssoc(): bool
     {
+//        $keys = $this->keys();
+//        foreach($keys as $key) {
+//            if (!is_int($key)) {
+//                return true;
+//            }
+//        }
+//        return false;
         return array_keys($this->items) !== range(0, count($this->items) - 1);
     }
 

@@ -3,12 +3,12 @@
 namespace Adapt\Foundation\Collections;
 
 use Adapt\Foundation\Arrays\Arr;
-use Adapt\Foundation\Arrays\AsArray;
+use Adapt\Foundation\Arrays\Contracts\AsArray;
+use Adapt\Foundation\Arrays\Contracts\ToArray;
 use Adapt\Foundation\Arrays\Foundation;
-use Adapt\Foundation\Arrays\ToArray;
 use Adapt\Foundation\Comparison\Compare;
+use Adapt\Foundation\Strings\Contracts\ToString;
 use Adapt\Foundation\Strings\Str;
-use Adapt\Foundation\Strings\ToString;
 use Closure;
 
 class Collection extends Arr
@@ -133,35 +133,27 @@ class Collection extends Arr
 
     public function duplicates(ToString|string|null $key = null): static
     {
-        $closure = function ($value) {
-            return $value > 1;
-        };
-
-        $output = static::create();
-
-        $lastValue = null;
+        $duplicates = static::create();
+        $uniqueItems = static::create();
 
         $values = $this->collect();
-
-        if ($key instanceof ToString) {
-            $key = $key->toString();
-        }
-
         if ($key) {
+            if ($key instanceof ToString) {
+                $key = $key->toString();
+            }
+
             $values = $values->column($key);
         }
 
-        $values->sortAscending(true);
-        $values->each(function($item, $key) use (&$output, &$lastValue) {
-            if ($item === $lastValue) {
-                $output[$key] = $item;
+        $values->each(function ($value, $key) use (&$duplicates, &$uniqueItems) {
+            if ($uniqueItems->values()->in($value)) {
+                $duplicates[$key] = $value;
+            } else {
+                $uniqueItems[$key] = $value;
             }
-
-            $lastValue = $item;
         });
 
-        $output->sortKeysAscending();
-        return $output;
+        return $duplicates;
     }
 
     public function each(Closure $closure): static
@@ -260,8 +252,13 @@ class Collection extends Arr
         $output = static::create();
 
         foreach($this->items as $item) {
-            if (is_array($item) && $depth > 0) {
-                $output = $output->merge(static::fromArray($item)->flatten(--$depth));
+            if (is_array($item)) {
+                if ($depth === 1) {
+                    $output = $output->merge(array_values($item));
+                } else {
+                    $output = $output->merge(static::fromArray($item)->flatten(--$depth));
+                }
+
             } else {
                 $output[] = $item;
             }
@@ -297,7 +294,10 @@ class Collection extends Arr
                 if (!isset($output[$groupKey])) {
                     $output[$groupKey] = static::create();
                 }
-                $output[$groupKey][] = $item;
+
+                if (!$output[$groupKey]->in($item)) {
+                    $output[$groupKey][] = $item;
+                }
             }
         }
 
@@ -431,7 +431,7 @@ class Collection extends Arr
     {
         $output = static::create();
         $this->each(function ($item, $key) use (&$output, $closure) {
-            $output[] = $closure($item, $key);
+            $output = $output->merge($closure($item, $key));
         });
         return $output;
     }
@@ -917,9 +917,9 @@ class Collection extends Arr
     public function when(bool $condition, Closure $then, Closure|null $else = null): static
     {
         if ($condition) {
-            return $then($this);
+            return $then($this, $condition);
         } elseif ($else) {
-            return $else($this);
+            return $else($this, $condition);
         }
 
         return $this;
@@ -979,7 +979,7 @@ class Collection extends Arr
             }
 
             return true;
-        });
+        })->values();
     }
 
     public function whereBetween(ToString|string $key, mixed $min, mixed $max): static
@@ -1014,7 +1014,7 @@ class Collection extends Arr
             }
 
             return true;
-        });
+        })->values();
     }
 
     public function whereIn(ToString|string $key, AsArray|array $array): static
@@ -1037,7 +1037,7 @@ class Collection extends Arr
             }
 
             return in_array($item[$key], $array);
-        });
+        })->values();
     }
 
     public function whereInstanceOf(ToString|string $class): static
@@ -1083,7 +1083,7 @@ class Collection extends Arr
             }
 
             return false;
-        });
+        })->values();
     }
 
     public function whereNotIn(ToString|string $key, AsArray|array $array): static
@@ -1106,7 +1106,7 @@ class Collection extends Arr
             }
 
             return !in_array($item[$key], $array);
-        });
+        })->values();
     }
 
     public function whereNotNull(ToString|string $key): static
@@ -1125,7 +1125,7 @@ class Collection extends Arr
             }
 
             return !is_null($item[$key]);
-        });
+        })->values();
     }
 
     public function whereNull(ToString|string $key): static
@@ -1144,6 +1144,6 @@ class Collection extends Arr
             }
 
             return is_null($item[$key]);
-        });
+        })->values();
     }
 }

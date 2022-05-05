@@ -2,8 +2,8 @@
 
 namespace Tests\Adapt\Foundation\Arrays\TestClasses;
 
-use Adapt\Foundation\Arrays\AsArray;
-use Adapt\Foundation\Arrays\ToArray;
+use Adapt\Foundation\Arrays\Contracts\AsArray;
+use Adapt\Foundation\Arrays\Contracts\ToArray;
 
 class ToArrayAsArray implements ToArray, AsArray
 {

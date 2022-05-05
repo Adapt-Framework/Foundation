@@ -2,7 +2,7 @@
 
 namespace Adapt\Foundation\Comparison;
 
-use Adapt\Foundation\Strings\ToString;
+use Adapt\Foundation\Strings\Contracts\ToString;
 
 class Compare
 {
