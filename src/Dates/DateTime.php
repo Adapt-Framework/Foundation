@@ -275,7 +275,7 @@ class DateTime extends NativeDateTime implements ToString, FromString
 
     public function isAfternoon(): bool
     {
-        return $this->hour > 12;
+        return $this->hour >= 12;
     }
 
     public function isLeapYear(): bool
@@ -375,6 +375,7 @@ class DateTime extends NativeDateTime implements ToString, FromString
 
     public function goForwardToDayOfWeek(int $dayOfWeek): self
     {
+        $this->addDays(1);
         if ($dayOfWeek < self::SUNDAY || $dayOfWeek > self::SATURDAY) {
             return $this;
         }
@@ -389,6 +390,7 @@ class DateTime extends NativeDateTime implements ToString, FromString
 
     public function goBackToDayDayOfWeek(int $dayOfWeek): self
     {
+        $this->subDays(1);
         if ($dayOfWeek < self::SUNDAY || $dayOfWeek > self::SATURDAY) {
             return $this;
         }
@@ -418,19 +420,19 @@ class DateTime extends NativeDateTime implements ToString, FromString
     public function goToSecondDayInMonth(int|null $dayOfWeek = null): self
     {
         $this->goToFirstDayInMonth($dayOfWeek);
-        $this->goForwardToDayOfWeek($dayOfWeek);
+        return $this->goForwardToDayOfWeek($dayOfWeek);
     }
 
     public function goToThirdDayInMonth(int|null $dayOfWeek = null): self
     {
         $this->goToSecondDayInMonth($dayOfWeek);
-        $this->goForwardToDayOfWeek($dayOfWeek);
+        return $this->goForwardToDayOfWeek($dayOfWeek);
     }
 
     public function goToFourthDayInMonth(int|null $dayOfWeek = null): self
     {
         $this->goToThirdDayInMonth($dayOfWeek);
-        $this->goForwardToDayOfWeek($dayOfWeek);
+        return $this->goForwardToDayOfWeek($dayOfWeek);
     }
 
     public function goToLastDayInMonth(int|null $dayOfWeek = null): self
@@ -442,7 +444,7 @@ class DateTime extends NativeDateTime implements ToString, FromString
         }
 
         while ($this->dayOfWeek !== $dayOfWeek) {
-            $this->goToTomorrow();
+            $this->goToYesterday();
         }
 
         return $this;

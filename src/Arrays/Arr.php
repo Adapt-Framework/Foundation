@@ -11,38 +11,63 @@ class Arr extends Foundation
 {
     use ExtendableTrait;
 
+    /**
+     * Return an empty Arr
+     *
+     * @return static
+     */
     public static function create(): static
     {
         return new static([]);
     }
 
+    /**
+     * Is this an associative array?
+     *
+     * @return bool
+     */
     public function isAssoc(): bool
     {
-//        $keys = $this->keys();
-//        foreach($keys as $key) {
-//            if (!is_int($key)) {
-//                return true;
-//            }
-//        }
-//        return false;
         return array_keys($this->items) !== range(0, count($this->items) - 1);
     }
 
+    /**
+     * Returns the array keys
+     *
+     * @return $this
+     */
     public function keys(): static
     {
         return static::fromArray(array_keys($this->items));
     }
 
+    /**
+     * Returns the array keys in uppercase.
+     *
+     * @return $this
+     */
      public function upperCaseKeys(): static
      {
          return static::fromArray(array_change_key_case($this->items, CASE_UPPER));
      }
 
+    /**
+     * Returns the array keys in lowercase
+     *
+     * @return $this
+     */
      public function lowerCaseKeys(): static
      {
          return static::fromArray(array_change_key_case($this->items, CASE_LOWER));
      }
 
+    /**
+     * Returns an array of arrays of the given chunk size.
+     *
+     * @param int $length
+     * @param bool $preserveKeys
+     * @return $this
+     */
      public function chunk(int $length, bool $preserveKeys = false): static
      {
          return static::fromArray(
@@ -55,11 +80,24 @@ class Arr extends Foundation
          );
      }
 
+    /**
+     * Return the column of the array, optionally named with $indexKey
+     *
+     * @param int|string|null $columnKey
+     * @param int|string|null $indexKey
+     * @return $this
+     */
      public function column(int|string|null $columnKey, int|string|null $indexKey = null): static
      {
          return static::fromArray(array_column($this->items, $columnKey, $indexKey));
      }
 
+    /**
+     * Combines the values of this array with the given keys
+     *
+     * @param array|AsArray $keys
+     * @return $this
+     */
     public function combineWithKeys(array|AsArray $keys): static
     {
         if ($keys instanceof AsArray) {
@@ -68,6 +106,12 @@ class Arr extends Foundation
         return static::fromArray(array_combine($keys, $this->items));
     }
 
+    /**
+     * Uses the values of this array as keys for the values of the given array.
+     *
+     * @param array|AsArray $values
+     * @return $this
+     */
     public function combineWithValues(array|AsArray $values): static
     {
         if ($values instanceof AsArray) {
@@ -76,11 +120,22 @@ class Arr extends Foundation
         return static::fromArray(array_combine($this->items, $values));
     }
 
+    /**
+     * Returns a count of the values in this array
+     *
+     * @return $this
+     */
     public function countValues(): static
     {
         return static::fromArray(array_count_values($this->items));
     }
 
+    /**
+     * Returns turns the difference between this array and the given associative array.
+     *
+     * @param AsArray|array ...$arrays
+     * @return $this
+     */
     public function diffAssoc(AsArray|array ...$arrays): static
     {
         array_walk(
@@ -95,6 +150,12 @@ class Arr extends Foundation
         return static::fromArray(array_diff_assoc($this->items, ...$arrays));
     }
 
+    /**
+     * Returns the difference in keys between this array and the given array.
+     *
+     * @param AsArray|array ...$arrays
+     * @return $this
+     */
     public function diffKeys(AsArray|array ...$arrays): static
     {
         array_walk(
@@ -109,6 +170,12 @@ class Arr extends Foundation
         return static::fromArray(array_diff_key($this->items, ...$arrays));
     }
 
+    /**
+     * Returns the difference between this array and the given array.
+     *
+     * @param AsArray|array ...$arrays
+     * @return $this
+     */
     public function diff(AsArray|array ...$arrays): static
     {
         array_walk(
@@ -123,36 +190,57 @@ class Arr extends Foundation
         return static::fromArray(array_diff($this->items, ...$arrays));
     }
 
+    /**
+     * Using the values of this array as the keys to the values supplied, returning
+     * both together.
+     *
+     * @param mixed $value
+     * @return $this
+     */
     public function fillKeys(mixed $value): static
     {
         return static::fromArray(array_fill_keys($this->items, $value));
     }
 
+    /**
+     * Fills this array with values
+     *
+     * @param int $count
+     * @param mixed $value
+     * @param int $startIndex
+     * @return static
+     *
+     */
     public static function fill(int $count, mixed $value, int $startIndex = 0): static
     {
         return static::fromArray(array_fill($startIndex, $count, $value));
     }
 
+    /**
+     * Applies the $closure to each element in this array and uses the returned boolean to
+     * filter out elements from the returned array.
+     *
+     * @param Closure|null $closure
+     * @return $this
+     */
     public function filter(?Closure $closure = null): static
     {
         return static::fromArray(array_filter($this->items, $closure, ARRAY_FILTER_USE_BOTH));
     }
 
+    /**
+     * Flips the keys and values of this array around.
+     *
+     * @return $this
+     */
     public function flip(): static
     {
         return static::fromArray(array_flip($this->items));
     }
 
     /**
-     * Untested
+     * Gets a value from the array using the $key as a dot notation path
      *
-     * @example
-     * For the given array:
-     * ['users' => [['name' => ['first' => 'Matt']]]
-     *
-     * $arr->get('users.0.name.first') === 'Matt'
-     *
-     * @todo Write tests
      * @param ToString|string $key
      * @return mixed
      */
@@ -161,6 +249,12 @@ class Arr extends Foundation
         return ArrayPath::fromString($key)->extractFromArray($this->items);
     }
 
+    /**
+     * Intersects an associative array
+     *
+     * @param AsArray|array ...$arrays
+     * @return $this
+     */
     public function intersectAssoc(AsArray|array ...$arrays): static
     {
         array_walk(
@@ -175,6 +269,12 @@ class Arr extends Foundation
         return static::fromArray(array_intersect_assoc($this->items, ...$arrays));
     }
 
+    /**
+     * Intersection of this array and the provided array using the array keys
+     *
+     * @param AsArray|array ...$arrays
+     * @return $this
+     */
     public function intersectKey(AsArray|array ...$arrays): static
     {
         array_walk(
@@ -189,6 +289,12 @@ class Arr extends Foundation
         return static::fromArray(array_intersect_key($this->items, ...$arrays));
     }
 
+    /**
+     * Returns the intersection of this array and the provided array
+     *
+     * @param AsArray|array ...$arrays
+     * @return $this
+     */
     public function intersect(AsArray|array ...$arrays): static
     {
         array_walk(
@@ -203,6 +309,11 @@ class Arr extends Foundation
         return static::fromArray(array_intersect($this->items, ...$arrays));
     }
 
+    /**
+     * Is this array a list?
+     *
+     * @return bool
+     */
     public function isList(): bool
     {
         $keys = $this->keys()->toArray();
@@ -215,6 +326,11 @@ class Arr extends Foundation
         return true;
     }
 
+    /**
+     * Returns the first element in the array
+     *
+     * @return mixed
+     */
     public function first(): mixed
     {
         if ($this->count()) {
@@ -228,6 +344,11 @@ class Arr extends Foundation
         return null;
     }
 
+    /**
+     * Returns the last element in the array
+     *
+     * @return mixed
+     */
     public function last(): mixed
     {
         if ($this->count()) {
@@ -241,26 +362,54 @@ class Arr extends Foundation
         return null;
     }
 
+    /**
+     * Checks if the key exists in this array
+     *
+     * @param string|int $key
+     * @return bool
+     */
     public function keyExists(string|int $key): bool
     {
         return array_key_exists($key, $this->items);
     }
 
+    /**
+     * Get the first key in this array
+     *
+     * @return int|string|null
+     */
     public function keyFirst(): int|string|null
     {
         return array_key_first($this->items);
     }
 
+    /**
+     * Returns the last key in this array
+     *
+     * @return int|string|null
+     */
     public function keyLast(): int|string|null
     {
         return array_key_last($this->items);
     }
 
+    /**
+     * Maps the elements in this array against the given closure
+     *
+     * @param Closure $closure
+     * @return $this
+     */
     public function map(Closure $closure): static
     {
         return static::fromArray(array_map($closure, $this->items));
     }
 
+    /**
+     * Merges this array with the provided array(s)
+     *
+     * @param AsArray|array ...$arrays
+     * @return $this
+     */
     public function merge(AsArray|array ...$arrays): static
     {
         array_walk(
@@ -275,6 +424,12 @@ class Arr extends Foundation
         return static::fromArray(array_merge($this->items, ...$arrays));
     }
 
+    /**
+     * Merges this array recursively with the provided array(s)
+     *
+     * @param AsArray|array ...$arrays
+     * @return $this
+     */
     public function mergeRecursive(AsArray|array ...$arrays): static
     {
         array_walk(
@@ -289,27 +444,55 @@ class Arr extends Foundation
         return static::fromArray(array_merge_recursive($this->items, ...$arrays));
     }
 
+    /**
+     * Pads this array with values
+     *
+     * @param int $length
+     * @param mixed $value
+     * @return $this
+     */
     public function pad(int $length, mixed $value): static
     {
         return static::fromArray(array_pad($this->items, $length, $value));
     }
 
+    /**
+     * Pops the last element off this array and returns it
+     *
+     * @return mixed
+     */
     public function pop(): mixed
     {
         $this->index = 0;
         return array_pop($this->items);
     }
 
+    /**
+     * Returns the product of this array
+     *
+     * @return int|float
+     */
     public function product(): int|float
     {
         return array_product($this->items);
     }
 
+    /**
+     * Pushes a value on to the end of this array
+     * @param mixed ...$values
+     * @return int
+     */
     public function push(mixed ...$values): int
     {
         return array_push($this->items, ...$values);
     }
 
+    /**
+     * Returns one or more random keys from this array
+     *
+     * @param int $number
+     * @return string|int|$this
+     */
     public function randKey(int $number = 1): static|string|int
     {
         if ($number === 1) {
@@ -319,6 +502,12 @@ class Arr extends Foundation
         return static::fromArray(array_rand($this->items, $number));
     }
 
+    /**
+     * Returns one or more random elements from this array
+     *
+     * @param int $number
+     * @return mixed
+     */
     public function rand(int $number = 1): mixed
     {
         $keys = $this->randKey($number);
@@ -331,10 +520,18 @@ class Arr extends Foundation
         });
     }
 
+    /**
+     * Reduces this array using the given closure
+     *
+     * @param Closure $closure
+     * @param mixed|null $initial
+     * @return mixed
+     */
     public function reduce(Closure $closure, mixed $initial = null): mixed
     {
         return array_reduce($this->items, $closure, $initial);
     }
+
 
     public function replace(AsArray|array ...$replacements): static
     {
